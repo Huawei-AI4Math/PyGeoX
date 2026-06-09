@@ -1,0 +1,38 @@
+# Data Generation Pipeline Configuration File
+
+# Generation parameters
+generation:
+  n_per_config: 1000  # Number of generations per configuration
+  output_base_dir: "benchmark_data"  # Base directory for outputs
+  model: "/mnt/disk0/models/Qwen3-Coder-30B-A3B-Instruct-FP8" # " " 
+  max_retries: 2  # Maximum retries per generation
+  start_config: 0  # Configuration ID to start from (for resuming)
+  start_gen: 0  # Generation ID to start from within config (for resuming)
+  n_cores: 10  # Number of CPU cores to use (null = 1, or specify number)
+
+# Solver parameters
+solver:
+  strict_tol: 3e-5  # Strict tolerance for solver
+  distance_penalty: 1  # Distance penalty for solver
+
+# Timeout parameters (in seconds)
+timeout:
+  generation_timeout: 180  # Timeout for single diagram generation (default: 240 = 4 minutes)
+  parallel_task_timeout: 360  # Timeout for parallel task execution (default: 300 = 5 minutes)
+  # Note: parallel_task_timeout should be >= generation_timeout since each
+  # parallel task includes diagram generation plus overhead
+
+# Configuration definitions: (num_objects, num_relationships, extra_rel_num)
+configurations:
+  - [1, 2, 2]  # Config 0: Simple diagram with 2 objects, 2 relationships, 2 extra constraints
+  - [1, 3, 3]
+  - [2, 3, 1]  # Config 2: Medium diagram with 3 objects, 3 relationships, 1 extra constraint
+  - [2, 4, 2]  # Config 3: Medium diagram with 4 objects, 4 relationships, 2 extra constraints
+  - [3, 4, 1]  # Config 4: Complex diagram with 4 objects, 4 relationships, 1 extra constraint
+  - [3, 5, 2]  # Config 5: Complex diagram with 5 objects, 5 relationships, 2 extra constraints
+
+# LLM API configuration (from .env file)
+# These will be loaded from .env file, but can be overridden here
+llm:
+  api_key: null  # Set to null to load from .env, or specify here
+  open_ai_base_url: null  # Set to null to load from .env, or specify here
