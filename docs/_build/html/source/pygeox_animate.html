@@ -1,0 +1,284 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>&lt;no title&gt; &mdash; PyGeoX 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.png"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=938c9ccc"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            PyGeoX
+              <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pygeox.html">Main geometric scene</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pygeox.html#module-pygeox.add_objects">Add geometric objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pygeox.html#module-pygeox.relationship">Add relationships</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pygeox.html#module-pygeox.constraint">Add constraints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pygeox.html#module-pygeox.solver">Solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pygeox.html#basic-objects-point-lines-circles-arcs">Basic Objects (point, lines, circles, arcs)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pygeox.html#module-pygeox.custom_objects">Polygons</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pygeox.html#animation-under-construction">Animation (Under construction)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PyGeoX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">&lt;no title&gt;</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/source/pygeox_animate.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <blockquote>
+<div><p>Animation</p>
+</div></blockquote>
+<hr class="docutils" />
+<dl class="py class" id="module-pygeox.animate">
+<dt class="sig sig-object py" id="pygeox.animate.AnimateNamespace">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pygeox.animate.</span></span><span class="sig-name descname"><span class="pre">AnimateNamespace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scene</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/animate.html#AnimateNamespace"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.animate.AnimateNamespace" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Namespace to manage animation parameters and generate animations
+by varying parameters within a geometric scene.</p>
+<p>Provides functionality to add animation parameters, run animations
+by solving constraints at discrete parameter values, and export
+animations as GIFs.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.animate.AnimateNamespace.add_parameter">
+<span class="sig-name descname"><span class="pre">add_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/animate.html#AnimateNamespace.add_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.animate.AnimateNamespace.add_parameter" title="Link to this definition"></a></dt>
+<dd><p>Add a new symbolic animation parameter to the scene.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – The name of the animation parameter.</p></li>
+<li><p><strong>total_time</strong> (<em>int</em><em> | </em><em>float</em><em> | </em><em>Expr</em><em> | </em><em>Symbol</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The sympy.Symbol representing the animation parameter.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.animate.AnimateNamespace.eval_piecewise_at_zero">
+<span class="sig-name descname"><span class="pre">eval_piecewise_at_zero</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anim_syms</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/animate.html#AnimateNamespace.eval_piecewise_at_zero"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.animate.AnimateNamespace.eval_piecewise_at_zero" title="Link to this definition"></a></dt>
+<dd><p>If <cite>expr</cite> contains Piecewise, pick the first branch whose condition is:
+- literally True, or
+- an And(…, alpha &gt;= 0, …) (ignoring other bounds), or
+- becomes True after substituting alpha -&gt; 0.
+Otherwise (no Piecewise), return expr unchanged.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.animate.AnimateNamespace.get_time_params">
+<span class="sig-name descname"><span class="pre">get_time_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/animate.html#AnimateNamespace.get_time_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.animate.AnimateNamespace.get_time_params" title="Link to this definition"></a></dt>
+<dd><p>Retrieve all animation parameters currently registered in the scene.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of sympy.Symbol animation parameters.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.animate.AnimateNamespace.gif">
+<span class="sig-name descname"><span class="pre">gif</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_loc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'animation.gif'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/animate.html#AnimateNamespace.gif"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.animate.AnimateNamespace.gif" title="Link to this definition"></a></dt>
+<dd><p>Generate and save an animated GIF from the current list of solved scenes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>save_loc</strong> (<em>str</em>) – File path to save the GIF.</p></li>
+<li><p><strong>total_time</strong> – Total duration of the GIF in seconds.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If there are no frames to generate.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.animate.AnimateNamespace.point_sweep_arc">
+<span class="sig-name descname"><span class="pre">point_sweep_arc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">counterclockwise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">speed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/animate.html#AnimateNamespace.point_sweep_arc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.animate.AnimateNamespace.point_sweep_arc" title="Link to this definition"></a></dt>
+<dd><p>Animate a point moving along an arc by directly constraining its x and y coordinates.
+Point moves from arc.start_point to arc.end_point over the arc length.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>point</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>arc</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.MinorArc" title="pygeox.basic_objects.MinorArc"><em>MinorArc</em></a><em> | </em><a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.MajorArc" title="pygeox.basic_objects.MajorArc"><em>MajorArc</em></a>)</p></li>
+<li><p><strong>counterclockwise</strong> (<em>bool</em>)</p></li>
+<li><p><strong>total_time</strong> (<em>int</em><em> | </em><em>float</em><em> | </em><em>Expr</em><em> | </em><em>Symbol</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>speed</strong> (<em>int</em><em> | </em><em>float</em><em> | </em><em>Expr</em><em> | </em><em>Symbol</em><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.animate.AnimateNamespace.point_sweep_circle">
+<span class="sig-name descname"><span class="pre">point_sweep_circle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">circle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">counterclockwise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">speed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/animate.html#AnimateNamespace.point_sweep_circle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.animate.AnimateNamespace.point_sweep_circle" title="Link to this definition"></a></dt>
+<dd><p>Animate a point moving around a circle by directly constraining its x and y coordinates.
+Point starts at the top of the circle and moves counterclockwise by default.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>point</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>circle</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Circle" title="pygeox.basic_objects.Circle"><em>Circle</em></a>)</p></li>
+<li><p><strong>counterclockwise</strong> (<em>bool</em>)</p></li>
+<li><p><strong>total_time</strong> (<em>int</em><em> | </em><em>float</em><em> | </em><em>Expr</em><em> | </em><em>Symbol</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>speed</strong> (<em>int</em><em> | </em><em>float</em><em> | </em><em>Expr</em><em> | </em><em>Symbol</em><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.animate.AnimateNamespace.point_sweep_line">
+<span class="sig-name descname"><span class="pre">point_sweep_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">speed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/animate.html#AnimateNamespace.point_sweep_line"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.animate.AnimateNamespace.point_sweep_line" title="Link to this definition"></a></dt>
+<dd><p>Animate a point moving along a line segment by directly setting its x and y coordinates parametrically.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>point</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>start_point</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>end_point</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>total_time</strong> (<em>int</em><em> | </em><em>float</em><em> | </em><em>Expr</em><em> | </em><em>Symbol</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>speed</strong> (<em>int</em><em> | </em><em>float</em><em> | </em><em>Expr</em><em> | </em><em>Symbol</em><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.animate.AnimateNamespace.point_sweep_polyline">
+<span class="sig-name descname"><span class="pre">point_sweep_polyline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">speed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/animate.html#AnimateNamespace.point_sweep_polyline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.animate.AnimateNamespace.point_sweep_polyline" title="Link to this definition"></a></dt>
+<dd><p>Animates a point moving smoothly along a polyline defined by a sequence of points.</p>
+<p>A single parameter <cite>time_param</cite> in [0, 1] controls the point’s position.
+As <cite>time_param</cite> increases from 0 to 1, the point traverses each segment of the polyline
+in proportion to segment length. A single sympy.Piecewise constraint ensures that the point’s
+coordinates match the appropriate interpolated position along the active segment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>point</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>) – The Point object to animate.</p></li>
+<li><p><strong>path_points</strong> (<em>List</em><em>[</em><a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em>]</em>) – Ordered list of points defining the polyline path.</p></li>
+<li><p><strong>total_time</strong> (<em>int</em><em> | </em><em>float</em><em> | </em><em>Expr</em><em> | </em><em>Symbol</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>speed</strong> (<em>List</em><em>[</em><em>int</em><em> | </em><em>float</em><em> | </em><em>Expr</em><em> | </em><em>Symbol</em><em>] </em><em>| </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.animate.AnimateNamespace.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">moving_points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'dual_annealing'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_penalty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'independent'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/animate.html#AnimateNamespace.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.animate.AnimateNamespace.run" title="Link to this definition"></a></dt>
+<dd><p>Generate a sequence of solved scenes by interpolating animation parameters
+from 0 to 1, effectively creating frames of the animation.</p>
+<p>Points not listed in <cite>moving_points</cite> are fixed to their initial positions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>moving_points</strong> (<em>List</em><em>[</em><a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em>]</em>) – A list of Point objects that are allowed to move during animation.
+Points not in this list will remain fixed.</p></li>
+<li><p><strong>frames</strong> (<em>int</em>) – The number of frames to generate in the animation.</p></li>
+<li><p><strong>opt_method</strong> (<em>str</em>) – The numerical solver method to use for constraint solving.
+Refer to <cite>scipy.optimize.minimize</cite> for available options.</p></li>
+<li><p><strong>distance_penalty</strong> (<em>float</em><em> | </em><em>None</em>) – The penalty weight to avoid degenerate cases related to
+area and point distances. This is used in the first frame
+and as a penalty constraint. It is removed from the moving points.</p></li>
+<li><p><strong>min_dist</strong> (<em>float</em><em> | </em><em>None</em>) – The minimum allowed distance between points. This is only used for
+the first frame.</p></li>
+<li><p><strong>run_type</strong> (<em>Literal</em><em>[</em><em>'independent'</em><em>, </em><em>'together'</em><em>]</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If no animation parameters are defined in the scene.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Rafael Cabral.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

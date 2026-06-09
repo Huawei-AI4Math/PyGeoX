@@ -1,0 +1,1249 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pygeox.solver &mdash; PyGeoX 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../../_static/favicon.png"/>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=938c9ccc"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            PyGeoX
+              <img src="../../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pygeox.html">Main geometric scene</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pygeox.html#module-pygeox.add_objects">Add geometric objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pygeox.html#module-pygeox.relationship">Add relationships</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pygeox.html#module-pygeox.constraint">Add constraints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pygeox.html#module-pygeox.solver">Solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pygeox.html#basic-objects-point-lines-circles-arcs">Basic Objects (point, lines, circles, arcs)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pygeox.html#module-pygeox.custom_objects">Polygons</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pygeox.html#animation-under-construction">Animation (Under construction)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">PyGeoX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pygeox.solver</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pygeox.solver</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">randint</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
+
+<span class="kn">import</span> <span class="nn">numba</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">sympy</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">optimize</span>
+<span class="kn">from</span> <span class="nn">scipy.spatial.distance</span> <span class="kn">import</span> <span class="n">pdist</span><span class="p">,</span> <span class="n">squareform</span>
+<span class="kn">from</span> <span class="nn">sympy.printing.pycode</span> <span class="kn">import</span> <span class="n">PythonCodePrinter</span>
+
+<span class="kn">from</span> <span class="nn">.basic_objects</span> <span class="kn">import</span> <span class="n">Line</span><span class="p">,</span> <span class="n">Point</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">check_symbol_in_constraints</span>
+
+<span class="n">Coordinate</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">sympy</span><span class="o">.</span><span class="n">Expr</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="SolverNamespace">
+<a class="viewcode-back" href="../../source/pygeox_solver.html#pygeox.solver.SolverNamespace">[docs]</a>
+<span class="k">class</span> <span class="nc">SolverNamespace</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scene</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span> <span class="o">=</span> <span class="n">scene</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;not solved&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_alpha</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_beta</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_strict_penalty</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_strict_tol</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">objective_func</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vars_to_solve</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sub_objectives</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">multiple_solutions</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">independent_variables</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_internal_sol</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Namespace responsible for solving geometric constraint systems</span>
+<span class="sd">    both analytically and numerically within a geometric scene.</span>
+
+<span class="sd">    Provides methods to:</span>
+<span class="sd">    - Substitute solved values into scene objects.</span>
+<span class="sd">    - Simplify and prepare equations and constraints.</span>
+<span class="sd">    - Perform analytical symbolic solving using SymPy.</span>
+<span class="sd">    - Perform numerical optimization-based solving using SciPy.</span>
+<span class="sd">    - Manage multiple solutions and pick one.</span>
+<span class="sd">    - Define and evaluate the objective function for constraints.</span>
+<span class="sd">    - Analyze and report solution quality and constraint satisfaction.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        scene: Reference to the geometric scene containing constraints and objects.</span>
+<span class="sd">        status: Current solver status (&quot;not solved&quot;, &quot;success&quot;, &quot;failure&quot;, etc.).</span>
+<span class="sd">        multiple_solutions: List of multiple symbolic solutions found (if any).</span>
+<span class="sd">        _internal_sol: Last internal numerical solution vector.</span>
+<span class="sd">        other solver-related internal attributes...</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SolverNamespace.substitute_in_obj">
+<a class="viewcode-back" href="../../source/pygeox_solver.html#pygeox.solver.SolverNamespace.substitute_in_obj">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">substitute_in_obj</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">sol</span><span class="p">,</span> <span class="n">numeric</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">visited</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">visited</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">visited</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="n">obj_id</span> <span class="o">=</span> <span class="nb">id</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">obj_id</span> <span class="ow">in</span> <span class="n">visited</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">obj_id</span><span class="p">)</span>
+
+        <span class="c1"># Prepare substitution dict restricted to symbols actually in the expression</span>
+        <span class="n">sol_symbols</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">sol</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;__class__&quot;</span><span class="p">,</span> <span class="s2">&quot;__dict__&quot;</span><span class="p">,</span> <span class="s2">&quot;__weakref__&quot;</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="n">attr_descriptor</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">obj</span><span class="p">),</span> <span class="n">attr</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr_descriptor</span><span class="p">,</span> <span class="nb">property</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">callable</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="kc">None</span><span class="p">)):</span>
+                <span class="k">continue</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">sympy</span><span class="o">.</span><span class="n">Basic</span><span class="p">):</span>
+                <span class="c1"># Substitute only symbols present in sol and present in value</span>
+                <span class="n">relevant_subs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">sol</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">free_symbols</span> <span class="o">&amp;</span> <span class="n">sol_symbols</span><span class="p">}</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">relevant_subs</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">numeric</span><span class="p">:</span>
+                    <span class="c1"># Evaluate to float only if fully numeric (no free symbols)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">val</span><span class="o">.</span><span class="n">free_symbols</span><span class="p">:</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="n">val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="o">.</span><span class="n">evalf</span><span class="p">())</span>
+                        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                            <span class="k">pass</span>  <span class="c1"># keep symbolic if conversion fails</span>
+
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="k">pass</span>
+            <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">&quot;__dict__&quot;</span><span class="p">):</span>
+                <span class="n">SolverNamespace</span><span class="o">.</span><span class="n">substitute_in_obj</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">sol</span><span class="p">,</span> <span class="n">numeric</span><span class="p">,</span> <span class="n">visited</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+                <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s2">&quot;__dict__&quot;</span><span class="p">):</span>
+                        <span class="n">SolverNamespace</span><span class="o">.</span><span class="n">substitute_in_obj</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">sol</span><span class="p">,</span> <span class="n">numeric</span><span class="p">,</span> <span class="n">visited</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_build_mapping_subs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">mapping_subs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">full_parameters</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">info</span><span class="p">[</span><span class="s2">&quot;symbol&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;full&quot;</span><span class="p">]</span>
+        <span class="p">]</span>
+        <span class="k">for</span> <span class="n">mapping</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">mapping_constraints</span><span class="p">:</span>
+            <span class="n">eq</span> <span class="o">=</span> <span class="n">mapping</span><span class="p">[</span><span class="s2">&quot;equation&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eq</span><span class="p">,</span> <span class="n">sympy</span><span class="o">.</span><span class="n">Equality</span><span class="p">):</span>
+                <span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span> <span class="o">=</span> <span class="n">eq</span><span class="o">.</span><span class="n">lhs</span><span class="p">,</span> <span class="n">eq</span><span class="o">.</span><span class="n">rhs</span>
+                <span class="k">if</span> <span class="n">lhs</span> <span class="ow">in</span> <span class="n">full_parameters</span><span class="p">:</span>
+                    <span class="n">mapping_subs</span><span class="p">[</span><span class="n">lhs</span><span class="p">]</span> <span class="o">=</span> <span class="n">rhs</span>
+        <span class="k">return</span> <span class="n">mapping_subs</span>
+
+    <span class="k">def</span> <span class="nf">_substitute_equations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mapping_subs</span><span class="p">):</span>
+        <span class="n">equations</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">constraints</span><span class="p">:</span>
+            <span class="n">eq</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="s2">&quot;equation&quot;</span><span class="p">]</span>
+            <span class="n">eq_sub</span> <span class="o">=</span> <span class="n">eq</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">mapping_subs</span><span class="p">)</span>
+            <span class="n">equations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">eq_sub</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">equations</span>
+
+    <span class="k">def</span> <span class="nf">_extract_bounds_from_symbols</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbols</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extract bounds from sympy symbols using the domain variable of geoscene.</span>
+<span class="sd">        Args:</span>
+<span class="sd">            symbols (list): List of sympy.Symbol objects.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            list: List of (lower, upper) tuples for each symbol.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">bounds</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">sym</span> <span class="ow">in</span> <span class="n">symbols</span><span class="p">:</span>
+            <span class="n">bound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">sym</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;bound&quot;</span><span class="p">]</span>
+            <span class="n">bounds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bound</span> <span class="k">if</span> <span class="n">bound</span> <span class="k">else</span> <span class="p">[</span><span class="o">-</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1000</span><span class="p">]</span> <span class="p">)</span>
+            
+        <span class="k">return</span> <span class="n">bounds</span> 
+
+    <span class="k">def</span> <span class="nf">_random_initial_guess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate a random initial guess within the given bounds.</span>
+<span class="sd">        This version is corrected to handle None in bounds.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+        <span class="n">x0</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">low</span><span class="p">,</span> <span class="n">high</span> <span class="ow">in</span> <span class="n">bounds</span><span class="p">:</span>
+            <span class="c1"># Check if bounds are valid numbers before using them.</span>
+            <span class="c1"># This prevents the TypeError with np.isfinite(None).</span>
+            <span class="n">is_finite_bound</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">low</span><span class="p">)</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">high</span><span class="p">)</span> <span class="k">if</span> <span class="n">low</span> <span class="ow">and</span> <span class="n">high</span> <span class="k">else</span> <span class="kc">False</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">is_finite_bound</span><span class="p">:</span>
+                <span class="c1"># Ensure low is actually less than high for rng.uniform</span>
+                <span class="k">if</span> <span class="n">low</span> <span class="o">&lt;</span> <span class="n">high</span><span class="p">:</span>
+                    <span class="n">x0</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># If bounds are equal or invalid, just use the value</span>
+                    <span class="n">x0</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">low</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Fallback for unbounded variables (e.g., where low or high is None or inf)</span>
+                <span class="n">x0</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_check_inequalities</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sol</span><span class="p">,</span> <span class="n">mapping_subs</span><span class="p">,</span> <span class="n">ineqs</span><span class="p">):</span>
+        <span class="n">full_sol</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">sol</span><span class="p">,</span> <span class="o">**</span><span class="n">mapping_subs</span><span class="p">}</span>
+        <span class="n">ok</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">for</span> <span class="n">ineq</span> <span class="ow">in</span> <span class="n">ineqs</span><span class="p">:</span>
+            <span class="n">cond</span> <span class="o">=</span> <span class="n">ineq</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">full_sol</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">cond</span> <span class="ow">is</span> <span class="n">sympy</span><span class="o">.</span><span class="n">S</span><span class="o">.</span><span class="n">true</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">cond</span> <span class="ow">is</span> <span class="n">sympy</span><span class="o">.</span><span class="n">S</span><span class="o">.</span><span class="n">false</span><span class="p">:</span>
+                <span class="n">ok</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ok</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">ok</span><span class="p">:</span>
+                <span class="k">break</span>
+        <span class="k">return</span> <span class="n">ok</span>
+
+    <span class="k">def</span> <span class="nf">_replace_objects_with_sol_ana</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sol</span><span class="p">):</span>
+        <span class="n">full_subs</span> <span class="o">=</span> <span class="p">{</span><span class="n">lhs</span><span class="p">:</span> <span class="n">rhs</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">sol</span><span class="p">)</span> <span class="k">for</span> <span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mapping_subs</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="n">sol</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">full_subs</span><span class="p">)</span>
+        <span class="c1"># apply mapping substitutions</span>
+        <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">get_all_objects</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">SolverNamespace</span><span class="o">.</span><span class="n">substitute_in_obj</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">sol</span><span class="p">,</span> <span class="n">numeric</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">solution</span> <span class="o">=</span> <span class="n">sol</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;success&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;[solver.analytical] ✅ Only one solution found. Status: success.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">sol</span>
+
+<div class="viewcode-block" id="SolverNamespace.analytical">
+<a class="viewcode-back" href="../../source/pygeox_solver.html#pygeox.solver.SolverNamespace.analytical">[docs]</a>
+    <span class="k">def</span> <span class="nf">analytical</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Attempt to solve the constraint system symbolically (analytically).</span>
+
+<span class="sd">        Steps:</span>
+<span class="sd">            - Substitute mapping constraints.</span>
+<span class="sd">            - Separate equations and inequalities.</span>
+<span class="sd">            - Solve equalities using SymPy.</span>
+<span class="sd">            - Filter and validate solutions.</span>
+<span class="sd">            - Return unique solution or multiple candidates.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If no solution or invalid solutions found.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict or list of dicts: Solution mapping symbols to values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timings</span><span class="p">[</span><span class="s2">&quot;solver.analytical.start&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+
+        <span class="c1"># 1) build your substitutions and raw equation list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mapping_subs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_mapping_subs</span><span class="p">()</span>
+        <span class="n">equations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_substitute_equations</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mapping_subs</span><span class="p">)</span>
+
+        <span class="c1"># 2) split equations vs inequalities</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_eqs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ineqs</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">expr</span> <span class="ow">in</span> <span class="n">equations</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">sympy</span><span class="o">.</span><span class="n">Equality</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_eqs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_ineqs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span>
+
+        <span class="c1"># 3) warn if there are any inequalities</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ineqs</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="s2">&quot;[WARNING] Inequalities will be ignored for now. They will only be checked when final result is obtained.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># 4) pick your variables</span>
+        <span class="n">reduced</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">info</span><span class="p">[</span><span class="s2">&quot;symbol&quot;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;full&quot;</span><span class="p">]</span>
+        <span class="p">]</span>
+        <span class="n">full_p</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">info</span><span class="p">[</span><span class="s2">&quot;symbol&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;full&quot;</span><span class="p">]</span>
+        <span class="p">]</span>
+        <span class="n">variables</span> <span class="o">=</span> <span class="n">reduced</span> <span class="o">+</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">full_p</span> <span class="k">if</span> <span class="n">p</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mapping_subs</span><span class="p">]</span>
+
+        <span class="c1"># 5) solve just the equalities</span>
+        <span class="n">raw_solutions</span> <span class="o">=</span> <span class="n">sympy</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span>
+            <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eqs</span><span class="p">),</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">variables</span><span class="p">),</span> <span class="nb">dict</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>  <span class="c1"># sympy.nonlinsolve(eqs, variables)</span>
+        <span class="c1"># raw_solutions = [dict(zip(variables, sol)) for sol in raw_solutions]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">raw_solutions</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;failure&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;[solver.analytical] ❌ No solution found for equalities. Status: failure.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># filter out solutions where &quot;r&quot; variables are float,int and negative</span>
+        <span class="n">filtered_solutions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">acceptable_numeric_types</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">sympy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">numbers</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+            <span class="nb">float</span><span class="p">,</span>
+            <span class="nb">int</span><span class="p">,</span>
+            <span class="n">sympy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">numbers</span><span class="o">.</span><span class="n">Integer</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">raw_solution</span> <span class="ow">in</span> <span class="n">raw_solutions</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">raw_solution</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">var_param_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;type&quot;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">var_param_type</span> <span class="o">==</span> <span class="s2">&quot;r&quot;</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span>
+                    <span class="n">value</span><span class="p">,</span> <span class="n">acceptable_numeric_types</span>
+                <span class="p">):</span>
+                    <span class="k">if</span> <span class="n">value</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">filtered_solutions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">raw_solution</span><span class="p">)</span>
+
+        <span class="c1"># 7) branch on number of valid solutions</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">filtered_solutions</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_inequalities</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span> <span class="n">filtered_solutions</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mapping_subs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ineqs</span>
+            <span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;failure&quot;</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;[solver.analytical] ❌ Solution failed inequality check. Status: failure.&quot;</span>
+                <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_replace_objects_with_sol_ana</span><span class="p">(</span><span class="n">filtered_solutions</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">return</span>  <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">get_all_objects</span><span class="p">()</span>
+
+        <span class="c1"># multiple solutions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">multiple_solutions</span> <span class="o">=</span> <span class="n">filtered_solutions</span>
+        <span class="c1"># determine independent variables (free symbols in RHS)</span>
+        <span class="n">indep</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">sol</span> <span class="ow">in</span> <span class="n">filtered_solutions</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">rhs</span> <span class="ow">in</span> <span class="n">sol</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="n">indep</span> <span class="o">|=</span> <span class="n">rhs</span><span class="o">.</span><span class="n">free_symbols</span>
+        <span class="n">indep_list</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">indep</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="n">s</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_independent_variables</span> <span class="o">=</span> <span class="n">indep_list</span>
+
+        <span class="c1"># warn to pick solution</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;[solver.analytical] ⚠️ Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">filtered_solutions</span><span class="p">)</span><span class="si">}</span><span class="s2"> solutions. Use pick_solution() to select.&quot;</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">sol</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">filtered_solutions</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Solution </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">sol</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">indep_list</span><span class="p">:</span>
+            <span class="n">names</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">indep_list</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Independent variables: </span><span class="si">{</span><span class="n">names</span><span class="si">}</span><span class="s2">. You need to fix these to get a unique solution.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;multiple_solutions&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timings</span><span class="p">[</span><span class="s2">&quot;solver.analytical.end&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">filtered_solutions</span></div>
+
+
+<div class="viewcode-block" id="SolverNamespace.pick_solution">
+<a class="viewcode-back" href="../../source/pygeox_solver.html#pygeox.solver.SolverNamespace.pick_solution">[docs]</a>
+    <span class="k">def</span> <span class="nf">pick_solution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ind_var_values</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Select and apply one solution among multiple symbolic solutions.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            index: Index of the solution to pick (random if None).</span>
+<span class="sd">            ind_var_values: Optional fixed values for independent variables.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If solution contains invalid values or fails inequalities.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timings</span><span class="p">[</span><span class="s2">&quot;solver.pick_solution.start&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+
+        <span class="n">sols</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;multiple_solutions&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sols</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;[pick_solution] No multiple solutions stored. Nothing to pick.&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">indep</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_independent_variables&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="c1"># if index is None pick random</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">index</span><span class="p">:</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">sols</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[solver.pick_solution] Picked random solution: </span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># choose base solution</span>
+        <span class="n">sol_base</span> <span class="o">=</span> <span class="n">sols</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+
+        <span class="c1"># prepare mapping for independent variables -&gt; if user does not provide values, then pick random values in domain</span>
+        <span class="n">mapping</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">indep</span><span class="p">:</span>
+            <span class="c1"># use provided values or default to 0</span>
+            <span class="n">ind_var_values</span> <span class="o">=</span> <span class="n">ind_var_values</span> <span class="ow">or</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">indep</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">ind_var_values</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span><span class="p">:</span>
+                    <span class="n">indep_param_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;type&quot;</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">indep_param_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">]:</span>
+                        <span class="nb">min</span><span class="p">,</span> <span class="nb">max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">_domain_consts</span><span class="p">[</span><span class="n">indep_param_type</span><span class="p">]</span> <span class="ow">or</span> <span class="p">[</span>
+                            <span class="o">-</span><span class="mi">10</span><span class="p">,</span>
+                            <span class="mi">10</span><span class="p">,</span>
+                        <span class="p">]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="nb">min</span> <span class="o">=</span> <span class="mi">0</span>
+                        <span class="nb">max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">_domain_consts</span><span class="p">[</span><span class="s2">&quot;r&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="nb">max</span><span class="p">):</span>
+                            <span class="nb">max</span> <span class="o">=</span> <span class="mi">5</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="nb">min</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="nb">max</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;[solver.pick_solution] Picked random value for </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+                <span class="n">mapping</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">ind_var_values</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+        <span class="c1"># substitute independent var values into solution</span>
+        <span class="n">sol_sub</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">mapping</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">sol_base</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+        <span class="c1"># apply mapping_subs and substitute into scene</span>
+        <span class="n">full_sol</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">sol_sub</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_mapping_subs</span><span class="p">,</span> <span class="o">**</span><span class="n">mapping</span><span class="p">}</span>
+
+        <span class="n">acceptable_numeric_types</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">sympy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">numbers</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+            <span class="nb">float</span><span class="p">,</span>
+            <span class="nb">int</span><span class="p">,</span>
+            <span class="n">sympy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">numbers</span><span class="o">.</span><span class="n">Integer</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">acceptable_numeric_types</span><span class="p">)</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">full_sol</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+        <span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;failure&quot;</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[solver.pick_solution] Picked solution is: </span><span class="si">{</span><span class="n">full_sol</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;[solver.pick_solution] ❌ Solution contains imaginary numbers. Please pick another solution.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># check if it meets inequality constraint</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_inequalities</span><span class="p">(</span><span class="n">full_sol</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mapping_subs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ineqs</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;failure&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;[solver.pick_solution] ❌ Solution failed inequality check. Please pick another solution. Status: failure.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># substitute</span>
+        <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">get_all_objects</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">SolverNamespace</span><span class="o">.</span><span class="n">substitute_in_obj</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">full_sol</span><span class="p">,</span> <span class="n">numeric</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">solution</span> <span class="o">=</span> <span class="n">full_sol</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;success&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_replace_objects_with_sol_ana</span><span class="p">(</span><span class="n">sol_sub</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timings</span><span class="p">[</span><span class="s2">&quot;solver.pick_solution.end&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+
+        <span class="c1"># print summary</span>
+        <span class="k">if</span> <span class="n">indep</span><span class="p">:</span>
+            <span class="n">names</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">mapping</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">indep</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;[pick_solution] ✅ Applied solution </span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2"> with independent variables: </span><span class="si">{</span><span class="n">names</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[pick_solution] ✅ Applied solution </span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">get_all_objects</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="SolverNamespace.get_objective_function">
+<a class="viewcode-back" href="../../source/pygeox_solver.html#pygeox.solver.SolverNamespace.get_objective_function">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_objective_function</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">variables</span><span class="p">,</span>
+        <span class="n">equations</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">strict_penalty</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">strict_tol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-4</span><span class="p">,</span>
+        <span class="n">use_numba</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Build the objective function for numerical optimization from constraints.</span>
+
+<span class="sd">        Supports both pure Python and Numba-jitted versions.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            variables: List of variables to optimize.</span>
+<span class="sd">            equations: List of (description, sympy expression) constraints.</span>
+<span class="sd">            alpha: Weight for equality constraints.</span>
+<span class="sd">            beta: Weight for inequality constraints.</span>
+<span class="sd">            strict_penalty: Penalty for strict inequality violations.</span>
+<span class="sd">            strict_tol: Tolerance for strict inequalities.</span>
+<span class="sd">            use_numba: If True, return a Numba-accelerated function.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: (objective function, variables, dictionary of sub-objectives)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Store parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">=</span> <span class="n">beta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">strict_penalty</span> <span class="o">=</span> <span class="n">strict_penalty</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">strict_tol</span> <span class="o">=</span> <span class="n">strict_tol</span>
+
+        <span class="c1"># Classify constraints</span>
+        <span class="n">eqs</span><span class="p">,</span> <span class="n">geqs</span><span class="p">,</span> <span class="n">stricts</span><span class="p">,</span> <span class="n">neqs</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">desc</span><span class="p">,</span> <span class="n">expr</span> <span class="ow">in</span> <span class="n">equations</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">sympy</span><span class="o">.</span><span class="n">Equality</span><span class="p">):</span>
+                <span class="n">eqs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">desc</span><span class="p">,</span> <span class="n">expr</span><span class="o">.</span><span class="n">lhs</span> <span class="o">-</span> <span class="n">expr</span><span class="o">.</span><span class="n">rhs</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">sympy</span><span class="o">.</span><span class="n">GreaterThan</span><span class="p">):</span>
+                <span class="n">geqs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">desc</span><span class="p">,</span> <span class="n">expr</span><span class="o">.</span><span class="n">lhs</span> <span class="o">-</span> <span class="n">expr</span><span class="o">.</span><span class="n">rhs</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">sympy</span><span class="o">.</span><span class="n">LessThan</span><span class="p">):</span>
+                <span class="n">geqs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">desc</span><span class="p">,</span> <span class="n">expr</span><span class="o">.</span><span class="n">rhs</span> <span class="o">-</span> <span class="n">expr</span><span class="o">.</span><span class="n">lhs</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">sympy</span><span class="o">.</span><span class="n">StrictGreaterThan</span><span class="p">):</span>
+                <span class="n">stricts</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">desc</span><span class="p">,</span> <span class="n">expr</span><span class="o">.</span><span class="n">lhs</span> <span class="o">-</span> <span class="n">expr</span><span class="o">.</span><span class="n">rhs</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">sympy</span><span class="o">.</span><span class="n">StrictLessThan</span><span class="p">):</span>
+                <span class="n">stricts</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">desc</span><span class="p">,</span> <span class="n">expr</span><span class="o">.</span><span class="n">rhs</span> <span class="o">-</span> <span class="n">expr</span><span class="o">.</span><span class="n">lhs</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">sympy</span><span class="o">.</span><span class="n">Unequality</span><span class="p">):</span>
+                <span class="n">neqs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">desc</span><span class="p">,</span> <span class="n">expr</span><span class="o">.</span><span class="n">lhs</span> <span class="o">-</span> <span class="n">expr</span><span class="o">.</span><span class="n">rhs</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">eqs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">desc</span><span class="p">,</span> <span class="n">expr</span><span class="p">))</span>
+
+        <span class="c1"># If numba requested, dynamically generate and jitt the function</span>
+        <span class="k">if</span> <span class="n">use_numba</span><span class="p">:</span>
+            <span class="c1"># Remap symbols to x0, x1, ...</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+            <span class="n">x_syms</span> <span class="o">=</span> <span class="n">sympy</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;x0:</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">subs_map</span> <span class="o">=</span> <span class="p">{</span><span class="n">variables</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span> <span class="n">x_syms</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)}</span>
+            <span class="n">eq_subs</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">subs_map</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">eqs</span><span class="p">]</span>
+            <span class="n">geq_subs</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">subs_map</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">geqs</span><span class="p">]</span>
+            <span class="n">strict_subs</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">subs_map</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">stricts</span><span class="p">]</span>
+            <span class="n">neq_subs</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">subs_map</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">neqs</span><span class="p">]</span>
+
+            <span class="n">printer</span> <span class="o">=</span> <span class="n">PythonCodePrinter</span><span class="p">()</span>
+            <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="c1"># unpack x</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    x</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> = x[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span>
+
+            <span class="c1"># compute constraints</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">eq_subs</span><span class="p">):</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    eq_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">printer</span><span class="o">.</span><span class="n">doprint</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">geq_subs</span><span class="p">):</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    geq_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">printer</span><span class="o">.</span><span class="n">doprint</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">strict_subs</span><span class="p">):</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    str_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">printer</span><span class="o">.</span><span class="n">doprint</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">neq_subs</span><span class="p">):</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    neq_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">printer</span><span class="o">.</span><span class="n">doprint</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># equality penalty (unchanged)</span>
+            <span class="n">eq_terms</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot; + &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;eq_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">*eq_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">eq_subs</span><span class="p">)))</span> <span class="ow">or</span> <span class="s2">&quot;0.0&quot;</span>
+            <span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    eq_penalty = </span><span class="si">{</span><span class="n">eq_terms</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># inequality (geq) penalty without max()</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;    geq_penalty = 0.0&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">geq_subs</span><span class="p">)):</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    if -geq_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> &gt; 0.0:&quot;</span><span class="p">)</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;        geq_penalty += (-geq_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">)**2&quot;</span><span class="p">)</span>
+
+            <span class="c1"># strict-inequality penalty without max()</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;    strict_penalty_val = 0.0&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">strict_subs</span><span class="p">)):</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    if </span><span class="si">{</span><span class="n">strict_tol</span><span class="si">}</span><span class="s2"> - str_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> &gt; 0.0:&quot;</span><span class="p">)</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;        strict_penalty_val += (</span><span class="si">{</span><span class="n">strict_tol</span><span class="si">}</span><span class="s2"> - str_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">)**2&quot;</span>
+                <span class="p">)</span>
+
+            <span class="c1"># not-equal penalty loop (unchanged)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;    neq_penalty = 0.0&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">neq_subs</span><span class="p">)):</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    if abs(neq_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">) &lt; </span><span class="si">{</span><span class="n">strict_tol</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;        neq_penalty += </span><span class="si">{</span><span class="n">strict_penalty</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># assemble return</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">alpha</span><span class="si">}</span><span class="s2">*eq_penalty + </span><span class="si">{</span><span class="n">beta</span><span class="si">}</span><span class="s2">*geq_penalty + </span><span class="si">{</span><span class="n">beta</span><span class="si">}</span><span class="s2">*strict_penalty_val + neq_penalty&quot;</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    return </span><span class="si">{</span><span class="n">ret</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="n">func_src</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;@numba.njit(fastmath=True, parallel=True, error_model=&#39;numpy&#39;)</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="s2">&quot;def objective(x):</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+            <span class="p">)</span>
+
+            <span class="c1"># assemble and exec</span>
+            <span class="n">namespace</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;numba&quot;</span><span class="p">:</span> <span class="n">numba</span><span class="p">,</span> <span class="s2">&quot;abs&quot;</span><span class="p">:</span> <span class="nb">abs</span><span class="p">,</span> <span class="s2">&quot;math&quot;</span><span class="p">:</span> <span class="n">math</span><span class="p">}</span>
+            <span class="n">local_ns</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">exec</span><span class="p">(</span><span class="n">func_src</span><span class="p">,</span> <span class="n">namespace</span><span class="p">,</span> <span class="n">local_ns</span><span class="p">)</span>
+            <span class="n">objective_fn</span> <span class="o">=</span> <span class="n">local_ns</span><span class="p">[</span><span class="s2">&quot;objective&quot;</span><span class="p">]</span>
+
+            <span class="c1"># build lambdas for diagnostics</span>
+            <span class="n">eq_lmb</span> <span class="o">=</span> <span class="p">[(</span><span class="n">d</span><span class="p">,</span> <span class="n">sympy</span><span class="o">.</span><span class="n">lambdify</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="s2">&quot;numpy&quot;</span><span class="p">),</span> <span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">eqs</span><span class="p">]</span>
+            <span class="n">geq_lmb</span> <span class="o">=</span> <span class="p">[(</span><span class="n">d</span><span class="p">,</span> <span class="n">sympy</span><span class="o">.</span><span class="n">lambdify</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="s2">&quot;numpy&quot;</span><span class="p">),</span> <span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">geqs</span><span class="p">]</span>
+            <span class="n">strict_lmb</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">sympy</span><span class="o">.</span><span class="n">lambdify</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="s2">&quot;numpy&quot;</span><span class="p">),</span> <span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">stricts</span>
+            <span class="p">]</span>
+            <span class="n">neq_lmb</span> <span class="o">=</span> <span class="p">[(</span><span class="n">d</span><span class="p">,</span> <span class="n">sympy</span><span class="o">.</span><span class="n">lambdify</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="s2">&quot;numpy&quot;</span><span class="p">),</span> <span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">neqs</span><span class="p">]</span>
+            <span class="n">sub_objs</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;equality&quot;</span><span class="p">:</span> <span class="n">eq_lmb</span><span class="p">,</span>
+                <span class="s2">&quot;geq&quot;</span><span class="p">:</span> <span class="n">geq_lmb</span><span class="p">,</span>
+                <span class="s2">&quot;strict&quot;</span><span class="p">:</span> <span class="n">strict_lmb</span><span class="p">,</span>
+                <span class="s2">&quot;neq&quot;</span><span class="p">:</span> <span class="n">neq_lmb</span><span class="p">,</span>
+            <span class="p">}</span>
+            <span class="k">return</span> <span class="n">objective_fn</span><span class="p">,</span> <span class="n">variables</span><span class="p">,</span> <span class="n">sub_objs</span>
+
+        <span class="c1"># Fallback: pure-Python lambdified version</span>
+        <span class="n">eq_lambdas</span> <span class="o">=</span> <span class="p">[(</span><span class="n">d</span><span class="p">,</span> <span class="n">sympy</span><span class="o">.</span><span class="n">lambdify</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="s2">&quot;numpy&quot;</span><span class="p">),</span> <span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">eqs</span><span class="p">]</span>
+        <span class="n">geq_lambdas</span> <span class="o">=</span> <span class="p">[(</span><span class="n">d</span><span class="p">,</span> <span class="n">sympy</span><span class="o">.</span><span class="n">lambdify</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="s2">&quot;numpy&quot;</span><span class="p">),</span> <span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">geqs</span><span class="p">]</span>
+        <span class="n">strict_lambdas</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">sympy</span><span class="o">.</span><span class="n">lambdify</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="s2">&quot;numpy&quot;</span><span class="p">),</span> <span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">stricts</span>
+        <span class="p">]</span>
+        <span class="n">neq_lambdas</span> <span class="o">=</span> <span class="p">[(</span><span class="n">d</span><span class="p">,</span> <span class="n">sympy</span><span class="o">.</span><span class="n">lambdify</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="s2">&quot;numpy&quot;</span><span class="p">),</span> <span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">neqs</span><span class="p">]</span>
+
+        <span class="k">def</span> <span class="nf">objective</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="n">eq_vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="p">(</span><span class="o">*</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">eq_lambdas</span><span class="p">]</span>
+            <span class="n">geq_vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="p">(</span><span class="o">*</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">geq_lambdas</span><span class="p">]</span>
+            <span class="n">strict_vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="p">(</span><span class="o">*</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">strict_lambdas</span><span class="p">]</span>
+            <span class="n">neq_vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="p">(</span><span class="o">*</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">neq_lambdas</span><span class="p">]</span>
+            <span class="n">eq_penalty</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">eq_vals</span><span class="p">)</span>
+            <span class="n">geq_penalty</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">v</span><span class="p">))</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">geq_vals</span><span class="p">)</span>
+            <span class="n">str_pen</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">strict_tol</span> <span class="o">-</span> <span class="n">v</span><span class="p">))</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">strict_vals</span><span class="p">)</span>
+            <span class="n">neq_penalty</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+                <span class="n">strict_penalty</span> <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">strict_tol</span> <span class="k">else</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">neq_vals</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="p">(</span>
+                <span class="n">alpha</span> <span class="o">*</span> <span class="n">eq_penalty</span> <span class="o">+</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">geq_penalty</span> <span class="o">+</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">str_pen</span> <span class="o">+</span> <span class="n">neq_penalty</span>
+            <span class="p">)</span>
+
+        <span class="n">sub_objectives</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;equality&quot;</span><span class="p">:</span> <span class="n">eq_lambdas</span><span class="p">,</span>
+            <span class="s2">&quot;geq&quot;</span><span class="p">:</span> <span class="n">geq_lambdas</span><span class="p">,</span>
+            <span class="s2">&quot;strict&quot;</span><span class="p">:</span> <span class="n">strict_lambdas</span><span class="p">,</span>
+            <span class="s2">&quot;neq&quot;</span><span class="p">:</span> <span class="n">neq_lambdas</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">objective</span><span class="p">,</span> <span class="n">variables</span><span class="p">,</span> <span class="n">sub_objectives</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_replace_objects_with_sol_num</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vars_to_solve</span><span class="p">,</span> <span class="n">internal_sol</span><span class="p">,</span> <span class="n">mapping_subs</span><span class="p">,</span> <span class="n">red_full_mapping</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_internal_sol</span> <span class="o">=</span> <span class="n">internal_sol</span>  <span class="c1"># solution</span>
+
+        <span class="k">if</span> <span class="n">vars_to_solve</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="c1">#all values given numerically?</span>
+            <span class="n">sol</span> <span class="o">=</span> <span class="n">mapping_subs</span>
+            <span class="c1">#replace red_full_mapping</span>
+            <span class="n">full_subs</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">lhs</span><span class="p">:</span> <span class="n">rhs</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">sol</span><span class="p">)</span> <span class="k">for</span> <span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span> <span class="ow">in</span> <span class="n">red_full_mapping</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="p">}</span>  <span class="c1"># replace all expressions including the replaced original variables</span>
+            <span class="n">sol</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">full_subs</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sol</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">vars_to_solve</span><span class="p">,</span> <span class="n">internal_sol</span><span class="p">))</span> <span class="c1"># organize for return and geoscene</span>
+
+            <span class="c1">#replace mapping_subs (circumradius = 5 )</span>
+            <span class="n">full_subs</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">lhs</span><span class="p">:</span> <span class="n">rhs</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">sol</span><span class="p">)</span> <span class="k">for</span> <span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span> <span class="ow">in</span> <span class="n">mapping_subs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="p">}</span>
+            <span class="n">sol</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">full_subs</span><span class="p">)</span>
+
+            <span class="c1">#replace red_full_mapping</span>
+            <span class="n">full_subs</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">lhs</span><span class="p">:</span> <span class="n">rhs</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">sol</span><span class="p">)</span> <span class="k">for</span> <span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span> <span class="ow">in</span> <span class="n">red_full_mapping</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="p">}</span>  <span class="c1"># replace all expressions including the replaced original variables</span>
+            <span class="n">sol</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">full_subs</span><span class="p">)</span>
+
+        <span class="c1"># save the original scene (not solved)</span>
+        <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">get_all_objects</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>  <span class="c1"># replace all objects values</span>
+            <span class="n">SolverNamespace</span><span class="o">.</span><span class="n">substitute_in_obj</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">sol</span><span class="p">,</span> <span class="n">numeric</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">solution</span> <span class="o">=</span> <span class="n">sol</span>
+
+        <span class="k">return</span> <span class="n">sol</span>
+
+    <span class="k">def</span> <span class="nf">_add_penalty</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">distance_penalty</span><span class="p">,</span> <span class="n">min_dist</span><span class="p">):</span>
+
+        <span class="c1">#1. Make area of all closed shapes larger then min_dist**2</span>
+        <span class="n">scanned_points</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">obj_type</span><span class="p">,</span> <span class="n">obj_list</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>                
+            <span class="k">if</span> <span class="n">obj_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;Point&quot;</span><span class="p">,</span> <span class="s2">&quot;LineSegment&quot;</span><span class="p">,</span> <span class="s2">&quot;Line&quot;</span><span class="p">,</span> <span class="s2">&quot;Ray&quot;</span><span class="p">,</span> <span class="s2">&quot;MajorArc&quot;</span><span class="p">,</span> <span class="s2">&quot;Angle&quot;</span><span class="p">]:</span>
+                <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">obj_list</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">constraint</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="n">distance_penalty</span> <span class="o">*</span> <span class="p">(</span> <span class="n">obj</span><span class="o">.</span><span class="n">area</span> <span class="o">-</span> <span class="n">min_dist</span><span class="o">**</span><span class="mi">2</span> <span class="p">),</span> <span class="mi">0</span> <span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Area of </span><span class="si">{</span><span class="n">obj</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> &gt; </span><span class="si">{</span><span class="n">min_dist</span><span class="si">}</span><span class="s2">**2 (penalty)&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">obj_type</span> <span class="o">==</span> <span class="s2">&quot;Circle&quot;</span><span class="p">:</span>
+                        <span class="n">points_to_add</span> <span class="o">=</span> <span class="p">[</span><span class="n">obj</span><span class="o">.</span><span class="n">center</span><span class="p">]</span>
+                    <span class="k">elif</span> <span class="n">obj_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;MinorArc&quot;</span><span class="p">]:</span>
+                        <span class="n">points_to_add</span> <span class="o">=</span> <span class="p">[</span><span class="n">obj</span><span class="o">.</span><span class="n">center</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">start_point</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">end_point</span><span class="p">]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">points_to_add</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">points</span>
+                    <span class="n">scanned_points</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">points_to_add</span><span class="p">)</span>
+
+        <span class="c1">##2. deal with infinite lines -&gt; force them to have seperate slope + intercept pairs</span>
+        <span class="n">line_objs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">objects</span><span class="p">[</span><span class="s2">&quot;Line&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">line_objs</span><span class="p">)):</span>
+            <span class="n">li</span> <span class="o">=</span> <span class="n">line_objs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">line_objs</span><span class="p">)):</span>
+                <span class="n">lj</span> <span class="o">=</span> <span class="n">line_objs</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+
+                <span class="n">ds</span> <span class="o">=</span> <span class="n">li</span><span class="o">.</span><span class="n">slope</span> <span class="o">-</span> <span class="n">lj</span><span class="o">.</span><span class="n">slope</span>
+                <span class="n">db</span> <span class="o">=</span> <span class="n">li</span><span class="o">.</span><span class="n">intercept</span> <span class="o">-</span> <span class="n">lj</span><span class="o">.</span><span class="n">intercept</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">constraint</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span>
+                    <span class="n">ds</span> <span class="o">+</span> <span class="n">db</span>  <span class="o">-</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">min_dist</span><span class="p">),</span>
+                    <span class="mi">0</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">&quot;Separate Line </span><span class="si">{</span><span class="n">li</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">lj</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: (penalty)&quot;</span>
+                <span class="p">)</span>
+
+        <span class="c1">##3. deal with moving point animation...</span>
+        <span class="n">points_to_remove</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">_moving_points</span>
+
+        <span class="c1">##4. penalize distance between free_points and all_points(except moving points)</span>
+        <span class="n">all_points</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">objects</span><span class="p">[</span><span class="s2">&quot;Point&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="n">all_points</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">all_points</span> <span class="k">if</span> <span class="n">p</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">points_to_remove</span><span class="p">]</span>
+        <span class="n">free_points</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">all_points</span> <span class="k">if</span> <span class="n">p</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">scanned_points</span><span class="p">]</span>
+
+        <span class="n">seen</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">p1</span> <span class="ow">in</span> <span class="n">free_points</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">p2</span> <span class="ow">in</span> <span class="n">all_points</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">p1</span> <span class="o">==</span> <span class="n">p2</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">pair</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">((</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">seen</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">seen</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pair</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">constraint</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span>
+                    <span class="n">distance_penalty</span> <span class="o">*</span> <span class="p">(</span><span class="n">p1</span><span class="o">.</span><span class="n">distance_squared</span><span class="p">(</span><span class="n">p2</span><span class="p">)</span> <span class="o">-</span> <span class="n">min_dist</span><span class="o">**</span><span class="mi">2</span><span class="p">),</span>
+                    <span class="mi">0</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">p1</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">p2</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> &gt; </span><span class="si">{</span><span class="n">min_dist</span><span class="si">}</span><span class="s2"> (penalty)&quot;</span><span class="p">)</span>
+
+
+        <span class="c1">#from itertools import combinations</span>
+
+        <span class="c1">#for point1, point2 in combinations(</span>
+        <span class="c1">#    list(self.scene.objects[&quot;Point&quot;].values()), 2</span>
+        <span class="c1">#):</span>
+            <span class="c1"># avoid overlapping points</span>
+        <span class="c1">#    eq = distance_penalty * (point1.distance_squared(point2) - min_dist**2)</span>
+        <span class="c1">#    if not isinstance(eq, float):</span>
+        <span class="c1">#        self.scene.constraint.gt(</span>
+        <span class="c1">#            distance_penalty</span>
+        <span class="c1">#            * (point1.distance_squared(point2) - min_dist**2),</span>
+        <span class="c1">#            0,</span>
+        <span class="c1">#            f&quot;{point1.name} {point2.name} &gt; {min_dist}  (penalty)&quot;,</span>
+        <span class="c1">#        )</span>
+        <span class="c1"># prevent &quot;radius&quot; variables from being 0</span>
+        <span class="c1">#r_symbols = [</span>
+        <span class="c1">#    param[&quot;symbol&quot;]</span>
+        <span class="c1">#    for param in self.scene.parameters.values()</span>
+        <span class="c1">#    if param[&quot;type&quot;] == &quot;r&quot;</span>
+        <span class="c1">#]</span>
+        <span class="c1">#[</span>
+        <span class="c1">#    self.scene.constraint.gt(r_symbol, min_dist)</span>
+        <span class="c1">#    for r_symbol in r_symbols</span>
+        <span class="c1">#    if not isinstance(r_symbol, float)</span>
+        <span class="c1">#]</span>
+
+
+<div class="viewcode-block" id="SolverNamespace.simplify_constraints">
+<a class="viewcode-back" href="../../source/pygeox_solver.html#pygeox.solver.SolverNamespace.simplify_constraints">[docs]</a>
+    <span class="k">def</span> <span class="nf">simplify_constraints</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_linear</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Simplify the constraint system by applying known variable mappings, removing</span>
+<span class="sd">        trivial equalities, and optionally performing cheap linear eliminations.</span>
+
+<span class="sd">        This reduces the number of independent variables and constraints, aiding solver efficiency.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            max_linear (int): Maximum number of additional cheap linear eliminations to attempt.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple:</span>
+<span class="sd">                - indep_vars (list[sympy.Symbol]): Independent variables after simplification.</span>
+<span class="sd">                - reduced_eqs (list[sympy.Expr]): Simplified constraint expressions (lhs - rhs).</span>
+<span class="sd">                - mapping (dict[sympy.Symbol, sympy.Expr]): Mapping from dependent to independent variables.</span>
+<span class="sd">                - red_full_mapping (dict[sympy.Symbol, sympy.Expr]): Final mapping of variables to expressions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">params</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="p">[</span><span class="s2">&quot;symbol&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
+        <span class="n">red_full_mapping</span> <span class="o">=</span> <span class="p">{</span><span class="n">p</span><span class="p">[</span><span class="s2">&quot;equation&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">lhs</span><span class="p">:</span> <span class="n">p</span><span class="p">[</span><span class="s2">&quot;equation&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">rhs</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">mapping_constraints</span><span class="p">}</span>
+
+        <span class="c1">#seperate equalities and inequalities and remove duplicates</span>
+        <span class="n">eqs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">([(</span><span class="n">c</span><span class="p">[</span><span class="s2">&quot;description&quot;</span><span class="p">],</span> <span class="n">c</span><span class="p">[</span><span class="s2">&quot;equation&quot;</span><span class="p">])</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">constraints</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s2">&quot;equation&quot;</span><span class="p">],</span> <span class="n">sympy</span><span class="o">.</span><span class="n">Equality</span><span class="p">)]))</span>
+        <span class="n">ineqs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">([(</span><span class="n">c</span><span class="p">[</span><span class="s2">&quot;description&quot;</span><span class="p">],</span> <span class="n">c</span><span class="p">[</span><span class="s2">&quot;equation&quot;</span><span class="p">])</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">constraints</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s2">&quot;equation&quot;</span><span class="p">],</span> <span class="n">sympy</span><span class="o">.</span><span class="n">Equality</span><span class="p">)]))</span>
+
+        <span class="c1">#Step 1. easy simplify (remove square roots)</span>
+        <span class="k">def</span> <span class="nf">has_sqrtish</span><span class="p">(</span><span class="n">expr</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">expr</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="n">sympy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">expr</span><span class="o">.</span><span class="n">atoms</span><span class="p">(</span><span class="n">sympy</span><span class="o">.</span><span class="n">Pow</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">exp</span> <span class="o">==</span> <span class="n">sympy</span><span class="o">.</span><span class="n">Rational</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">desc</span><span class="p">,</span> <span class="n">eq</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">eqs</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">has_sqrtish</span><span class="p">(</span><span class="n">eq</span><span class="o">.</span><span class="n">lhs</span><span class="p">)</span> <span class="ow">or</span> <span class="n">has_sqrtish</span><span class="p">(</span><span class="n">eq</span><span class="o">.</span><span class="n">rhs</span><span class="p">):</span>
+                <span class="n">eqs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">desc</span><span class="p">,</span> <span class="n">sympy</span><span class="o">.</span><span class="n">Eq</span><span class="p">(</span><span class="n">eq</span><span class="o">.</span><span class="n">lhs</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">eq</span><span class="o">.</span><span class="n">rhs</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+        
+        <span class="c1">#Step 2. deal with reduced mapping variables for regular polygons, etc...</span>
+        <span class="n">eqs</span> <span class="o">=</span> <span class="p">[(</span><span class="n">desc</span><span class="p">,</span><span class="n">sympy</span><span class="o">.</span><span class="n">Eq</span><span class="p">(</span><span class="n">eq</span><span class="o">.</span><span class="n">lhs</span><span class="o">.</span><span class="n">xreplace</span><span class="p">(</span><span class="n">red_full_mapping</span><span class="p">),</span> <span class="n">eq</span><span class="o">.</span><span class="n">rhs</span><span class="o">.</span><span class="n">xreplace</span><span class="p">(</span><span class="n">red_full_mapping</span><span class="p">)))</span> <span class="k">for</span> <span class="n">desc</span><span class="p">,</span> <span class="n">eq</span> <span class="ow">in</span> <span class="n">eqs</span> <span class="p">]</span>
+        <span class="n">ineqs</span> <span class="o">=</span> <span class="p">[(</span><span class="n">d</span><span class="p">,</span> <span class="n">rel</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="n">rel</span><span class="o">.</span><span class="n">lhs</span><span class="o">.</span><span class="n">xreplace</span><span class="p">(</span><span class="n">red_full_mapping</span><span class="p">),</span><span class="n">rel</span><span class="o">.</span><span class="n">rhs</span><span class="o">.</span><span class="n">xreplace</span><span class="p">(</span><span class="n">red_full_mapping</span><span class="p">)))</span> <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">rel</span> <span class="ow">in</span> <span class="n">ineqs</span><span class="p">]</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">params</span> <span class="k">if</span> <span class="n">p</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">red_full_mapping</span><span class="p">]</span> <span class="c1">#remove mapped variables from full_params</span>
+        <span class="n">dep_indep_mapping</span> <span class="o">=</span>  <span class="p">{}</span> <span class="c1">#red_full_mapping</span>
+
+        <span class="c1"># Step 3: prioritize equations where one side is fully numeric first, then by equation size (ops+len)</span>
+        <span class="k">def</span> <span class="nf">is_atomic_numeric</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">sympy</span><span class="o">.</span><span class="n">Integer</span><span class="p">,</span> <span class="n">sympy</span><span class="o">.</span><span class="n">Float</span><span class="p">))</span> <span class="ow">or</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">is_number</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">x</span><span class="o">.</span><span class="n">free_symbols</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">is_numeric_expr</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">is_atomic_numeric</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">lhs</span><span class="p">)</span> <span class="ow">or</span> <span class="n">is_atomic_numeric</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">rhs</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">eq_size_metric</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
+            <span class="c1"># cost: total operations </span>
+            <span class="k">return</span> <span class="n">sympy</span><span class="o">.</span><span class="n">count_ops</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">lhs</span> <span class="o">-</span> <span class="n">e</span><span class="o">.</span><span class="n">rhs</span><span class="p">,</span> <span class="n">visual</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="n">eqs</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">eq</span><span class="p">:</span> <span class="p">(</span><span class="ow">not</span> <span class="n">is_numeric_expr</span><span class="p">(</span><span class="n">eq</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">eq_size_metric</span><span class="p">(</span><span class="n">eq</span><span class="p">[</span><span class="mi">1</span><span class="p">])))</span>
+
+
+        <span class="c1">#step 4. find dependent variables - simple - remove eqs</span>
+
+        <span class="n">new_eqs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">desc</span><span class="p">,</span> <span class="n">eq</span> <span class="ow">in</span> <span class="n">eqs</span><span class="p">:</span>
+            <span class="n">L</span><span class="p">,</span> <span class="n">R</span> <span class="o">=</span> <span class="n">eq</span><span class="o">.</span><span class="n">lhs</span><span class="p">,</span> <span class="n">eq</span><span class="o">.</span><span class="n">rhs</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">sympy</span><span class="o">.</span><span class="n">Symbol</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span> <span class="p">(</span><span class="ow">not</span> <span class="n">R</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="n">L</span><span class="p">))</span> <span class="ow">and</span> <span class="p">(</span> <span class="ow">not</span> <span class="p">(</span> <span class="n">R</span><span class="o">.</span><span class="n">free_symbols</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">dep_indep_mapping</span><span class="o">.</span><span class="n">keys</span><span class="p">())))):</span>
+                <span class="k">if</span> <span class="n">L</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dep_indep_mapping</span><span class="p">:</span>
+                    <span class="n">dep_indep_mapping</span><span class="p">[</span><span class="n">L</span><span class="p">]</span> <span class="o">=</span> <span class="n">R</span>
+                    <span class="c1">#make sure no dep variable exists in R</span>
+                    <span class="k">continue</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">sympy</span><span class="o">.</span><span class="n">Symbol</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span> <span class="p">(</span><span class="ow">not</span> <span class="n">L</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="n">R</span><span class="p">))</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="p">(</span> <span class="n">L</span><span class="o">.</span><span class="n">free_symbols</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">dep_indep_mapping</span><span class="o">.</span><span class="n">keys</span><span class="p">())))):</span>
+                <span class="k">if</span> <span class="n">R</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dep_indep_mapping</span><span class="p">:</span>
+                    <span class="n">dep_indep_mapping</span><span class="p">[</span><span class="n">R</span><span class="p">]</span> <span class="o">=</span> <span class="n">L</span>
+                    <span class="k">continue</span>
+            <span class="n">new_eqs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">desc</span><span class="p">,</span><span class="n">eq</span><span class="p">))</span>
+        <span class="n">eqs</span> <span class="o">=</span> <span class="n">new_eqs</span>
+
+
+
+        <span class="c1">#step 5. replace in all equations and inequalities the dependent vars</span>
+        <span class="k">if</span> <span class="n">dep_indep_mapping</span><span class="p">:</span>
+            <span class="n">eqs</span> <span class="o">=</span> <span class="p">[</span> <span class="p">(</span><span class="n">desc</span><span class="p">,</span>  <span class="n">sympy</span><span class="o">.</span><span class="n">Eq</span><span class="p">(</span><span class="n">eq</span><span class="o">.</span><span class="n">lhs</span><span class="o">.</span><span class="n">xreplace</span><span class="p">(</span><span class="n">dep_indep_mapping</span><span class="p">),</span> <span class="n">eq</span><span class="o">.</span><span class="n">rhs</span><span class="o">.</span><span class="n">xreplace</span><span class="p">(</span><span class="n">dep_indep_mapping</span><span class="p">)))</span> <span class="k">for</span> <span class="n">desc</span><span class="p">,</span><span class="n">eq</span> <span class="ow">in</span> <span class="n">eqs</span><span class="p">]</span>
+            <span class="n">ineqs</span> <span class="o">=</span><span class="p">[</span> <span class="p">(</span><span class="n">desc</span><span class="p">,</span> <span class="n">rel</span><span class="o">.</span><span class="n">func</span><span class="p">(</span> <span class="n">rel</span><span class="o">.</span><span class="n">lhs</span><span class="o">.</span><span class="n">xreplace</span><span class="p">(</span><span class="n">dep_indep_mapping</span><span class="p">),</span> <span class="n">rel</span><span class="o">.</span><span class="n">rhs</span><span class="o">.</span><span class="n">xreplace</span><span class="p">(</span><span class="n">dep_indep_mapping</span><span class="p">)))</span> <span class="k">for</span> <span class="n">desc</span><span class="p">,</span> <span class="n">rel</span> <span class="ow">in</span> <span class="n">ineqs</span> <span class="p">]</span>
+
+
+
+        <span class="c1"># 5) optional: do a few *cheap* linear eliminations (at most `max_linear`)</span>
+        <span class="n">taken</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">remaining</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">desc</span><span class="p">,</span> <span class="n">eq</span> <span class="ow">in</span> <span class="n">eqs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">taken</span> <span class="o">&gt;=</span> <span class="n">max_linear</span><span class="p">:</span>
+                <span class="n">remaining</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">desc</span><span class="p">,</span><span class="n">eq</span><span class="p">))</span>
+                <span class="k">continue</span>
+            <span class="n">pick</span> <span class="o">=</span> <span class="n">_linear_in_one_eval</span><span class="p">(</span><span class="n">eq</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">pick</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">remaining</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">desc</span><span class="p">,</span><span class="n">eq</span><span class="p">))</span>
+                <span class="k">continue</span>
+            <span class="n">v</span><span class="p">,</span> <span class="n">rhs</span> <span class="o">=</span> <span class="n">pick</span>
+            <span class="n">dep_indep_mapping</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="n">rhs</span> <span class="c1">#TODO: make sure rhs does not have any dependent variables???</span>
+            <span class="n">taken</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="c1">#6) simplify and remove true equations</span>
+
+        <span class="c1">#SIMPLIFY_FAST = lambda e: sympy.powsimp(sympy.expand_mul(e), force=False)</span>
+        <span class="n">simplify_func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">e</span><span class="p">:</span> <span class="n">sympy</span><span class="o">.</span><span class="n">expand_mul</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="c1">#SIMPLIFY_NONE = lambda e: e</span>
+        <span class="n">new_eqs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">desc</span><span class="p">,</span> <span class="n">eq</span> <span class="ow">in</span> <span class="n">eqs</span><span class="p">:</span>
+            <span class="n">lhs</span> <span class="o">=</span> <span class="n">eq</span><span class="o">.</span><span class="n">lhs</span>
+            <span class="n">rhs</span> <span class="o">=</span> <span class="n">eq</span><span class="o">.</span><span class="n">rhs</span>
+            <span class="k">if</span> <span class="n">max_linear</span><span class="p">:</span>
+                <span class="n">lhs</span> <span class="o">=</span> <span class="n">lhs</span><span class="o">.</span><span class="n">xreplace</span><span class="p">(</span><span class="n">dep_indep_mapping</span><span class="p">)</span>
+                <span class="n">rhs</span> <span class="o">=</span> <span class="n">rhs</span><span class="o">.</span><span class="n">xreplace</span><span class="p">(</span><span class="n">dep_indep_mapping</span><span class="p">)</span>
+            
+            <span class="n">simplified</span> <span class="o">=</span> <span class="n">simplify_func</span><span class="p">(</span><span class="n">lhs</span> <span class="o">-</span> <span class="n">rhs</span><span class="p">)</span>
+            <span class="c1"># Drop trivial 0 == 0</span>
+            <span class="k">if</span> <span class="n">simplified</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">new_eqs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">desc</span><span class="p">,</span> <span class="n">simplified</span><span class="p">))</span>
+        <span class="n">eqs</span> <span class="o">=</span> <span class="n">new_eqs</span>
+
+        <span class="n">new_ineqs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">desc</span><span class="p">,</span> <span class="n">rel</span> <span class="ow">in</span> <span class="n">ineqs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">rel</span> <span class="o">==</span> <span class="n">sympy</span><span class="o">.</span><span class="n">S</span><span class="o">.</span><span class="n">true</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">lhs</span> <span class="o">=</span> <span class="n">rel</span><span class="o">.</span><span class="n">lhs</span>
+            <span class="n">rhs</span> <span class="o">=</span> <span class="n">rel</span><span class="o">.</span><span class="n">rhs</span>
+            <span class="k">if</span> <span class="n">max_linear</span><span class="p">:</span>
+                <span class="n">lhs</span> <span class="o">=</span> <span class="n">rel</span><span class="o">.</span><span class="n">lhs</span><span class="o">.</span><span class="n">xreplace</span><span class="p">(</span><span class="n">dep_indep_mapping</span><span class="p">)</span>
+                <span class="n">rhs</span> <span class="o">=</span> <span class="n">rel</span><span class="o">.</span><span class="n">rhs</span><span class="o">.</span><span class="n">xreplace</span><span class="p">(</span><span class="n">dep_indep_mapping</span><span class="p">)</span>
+            <span class="n">new_rel</span> <span class="o">=</span> <span class="n">rel</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">simplify_func</span><span class="p">(</span><span class="n">lhs</span><span class="p">),</span> <span class="n">simplify_func</span><span class="p">(</span><span class="n">rhs</span><span class="p">))</span>  <span class="c1"># rebuild preserving comparator</span>
+
+            <span class="k">if</span> <span class="n">new_rel</span> <span class="o">==</span> <span class="n">sympy</span><span class="o">.</span><span class="n">S</span><span class="o">.</span><span class="n">true</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">new_ineqs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">desc</span><span class="p">,</span> <span class="n">new_rel</span><span class="p">))</span>
+        <span class="n">ineqs</span> <span class="o">=</span> <span class="n">new_ineqs</span>
+
+        <span class="c1">#merge equalities and inequalities</span>
+        <span class="n">eqs</span> <span class="o">=</span> <span class="n">remaining</span> <span class="o">+</span> <span class="n">ineqs</span>
+        
+        <span class="n">dep_vars</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">dep_indep_mapping</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">indep_vars</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">params</span> <span class="k">if</span> <span class="n">p</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dep_vars</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">indep_vars</span><span class="p">,</span> <span class="n">eqs</span><span class="p">,</span> <span class="n">dep_indep_mapping</span><span class="p">,</span> <span class="n">red_full_mapping</span></div>
+
+
+
+
+<div class="viewcode-block" id="SolverNamespace.numerical">
+<a class="viewcode-back" href="../../source/pygeox_solver.html#pygeox.solver.SolverNamespace.numerical">[docs]</a>
+    <span class="k">def</span> <span class="nf">numerical</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">method</span><span class="o">=</span><span class="s2">&quot;basinhoping&quot;</span><span class="p">,</span>
+        <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">beta</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">strict_penalty</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">strict_tol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span>
+        <span class="n">distance_penalty</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">min_dist</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">use_numba</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">save_param_history</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Solve the constraint system numerically using global or local optimization.</span>
+
+<span class="sd">        Supports methods like basinhopping, L-BFGS-B, and dual_annealing.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            method: Optimization method name.</span>
+<span class="sd">            seed: Random seed.</span>
+<span class="sd">            alpha, beta, strict_penalty, strict_tol: Penalty weights and tolerances.</span>
+<span class="sd">            distance_penalty: Weight for penalty avoiding degenerate configurations.</span>
+<span class="sd">            min_dist: Minimum allowed distance between points.</span>
+<span class="sd">            use_numba: Use Numba-accelerated objective function.</span>
+<span class="sd">            save_param_history: Save parameter values during optimization.</span>
+<span class="sd">            verbose: Print detailed solver progress.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Dictionary with all objects with scene and solved numerical values.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If optimization fails.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">#Todo: add some warning if user called this function directly</span>
+        <span class="c1">#if self.scene._moving_points:</span>
+        <span class="c1">#    raise RuntimeWarning(&quot;This scene contains moving points. Please run scene.animate.run() instead.&quot;)</span>
+        
+        <span class="c1">#add timing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">_timings</span><span class="p">[</span><span class="s2">&quot;solve.numerical.init&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span> 
+
+        <span class="k">if</span> <span class="n">distance_penalty</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># compute default threshold if not provided</span>
+            <span class="k">if</span> <span class="n">min_dist</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">_domain_consts</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]:</span>
+                    <span class="n">min_dist</span> <span class="o">=</span> <span class="mf">0.1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">lx</span><span class="p">,</span> <span class="n">ux</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">_domain_consts</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
+                    <span class="n">ly</span><span class="p">,</span> <span class="n">uy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">_domain_consts</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span>
+                    <span class="n">min_dist</span> <span class="o">=</span> <span class="p">((</span><span class="n">ux</span> <span class="o">-</span> <span class="n">lx</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">uy</span> <span class="o">-</span> <span class="n">ly</span><span class="p">))</span> <span class="o">/</span> <span class="mi">200</span>
+
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;[INFO] Penalty active to prevent overlapping points (min_dist=</span><span class="si">{</span><span class="n">min_dist</span><span class="si">}</span><span class="s2">). To remove add: distance_penalty = 0&quot;</span>
+            <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_penalty</span><span class="p">(</span><span class="n">distance_penalty</span><span class="p">,</span> <span class="n">min_dist</span><span class="p">)</span>
+
+        <span class="c1">#print(f&quot;[INFO] Starting constraint simplification now.&quot;)</span>
+        <span class="c1">#init_vars_n  = len(self.scene.parameters)</span>
+        <span class="c1">#init_cons_n  = len(self.scene.constraints)</span>
+        <span class="c1">#variables, equations, mapping_subs, red_full_mapping =  self.simplify_constraints()</span>
+        <span class="c1">#print(f&quot;[INFO] Simplification complete. Reduced free variables from {init_vars_n} to {len(variables)} and constraints from {init_cons_n} to {len(equations)}.&quot;)</span>
+        <span class="c1">#print(f&quot;[INFO] Optimizing now...&quot;)</span>
+
+
+        <span class="c1"># Common setup: build substitution map and collect variables</span>
+        <span class="n">red_full_mapping</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_mapping_subs</span><span class="p">()</span>
+        <span class="n">reduced</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">info</span><span class="p">[</span><span class="s2">&quot;symbol&quot;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;full&quot;</span><span class="p">]</span>
+        <span class="p">]</span>
+        <span class="n">full</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">info</span><span class="p">[</span><span class="s2">&quot;symbol&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;full&quot;</span><span class="p">]</span>
+        <span class="p">]</span>
+        <span class="n">variables</span> <span class="o">=</span> <span class="n">reduced</span> <span class="o">+</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">full</span> <span class="k">if</span> <span class="n">p</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">red_full_mapping</span><span class="p">]</span>
+        <span class="n">equations</span> <span class="o">=</span> <span class="p">[(</span><span class="n">eq</span><span class="p">[</span><span class="s2">&quot;description&quot;</span><span class="p">],</span> <span class="n">eq</span><span class="p">[</span><span class="s2">&quot;equation&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">red_full_mapping</span><span class="p">))</span> <span class="k">for</span> <span class="n">eq</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">constraints</span><span class="p">]</span>
+        <span class="n">mapping_subs</span> <span class="o">=</span> <span class="p">{}</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">objective_func</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">vars_to_solve</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_objectives</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_objective_function</span><span class="p">(</span>
+                <span class="n">variables</span> <span class="o">=</span> <span class="n">variables</span><span class="p">,</span>
+                <span class="n">equations</span> <span class="o">=</span> <span class="n">equations</span><span class="p">,</span>
+                <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
+                <span class="n">beta</span><span class="o">=</span><span class="n">beta</span><span class="p">,</span>
+                <span class="n">strict_penalty</span><span class="o">=</span><span class="n">strict_penalty</span><span class="p">,</span>
+                <span class="n">strict_tol</span><span class="o">=</span><span class="n">strict_tol</span><span class="p">,</span>
+                <span class="n">use_numba</span><span class="o">=</span><span class="n">use_numba</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">bounds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_bounds_from_symbols</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vars_to_solve</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">vars_to_solve</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;[WARNING] No variables to solve&quot;</span><span class="p">)</span>
+            <span class="n">sol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_replace_objects_with_sol_num</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">{},</span> <span class="n">red_full_mapping</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">numerical_analysis</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">sol</span>
+
+        <span class="c1"># initial guess is previously found solution or random value</span>
+        <span class="n">x0</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_internal_sol</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_internal_sol</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_random_initial_guess</span><span class="p">(</span><span class="n">bounds</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">_timings</span><span class="p">[</span><span class="s2">&quot;solve.numerical.optimitize.start&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span> 
+
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;basinhoping&quot;</span><span class="p">:</span>
+            <span class="n">minimizer_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;L-BFGS-B&quot;</span><span class="p">,</span> <span class="s2">&quot;bounds&quot;</span><span class="p">:</span> <span class="n">bounds</span><span class="p">}</span>
+
+            <span class="c1"># List to store parameter values at each iteration</span>
+            <span class="k">if</span> <span class="n">save_param_history</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">history_params</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">history_obj_val</span> <span class="o">=</span> <span class="p">[]</span>
+
+                <span class="k">def</span> <span class="nf">basinhopping_callback</span><span class="p">(</span><span class="n">x_current_best</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">history_params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x_current_best</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">history_obj_val</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">objective_func</span><span class="p">(</span><span class="n">x_current_best</span><span class="p">))</span>
+
+                <span class="n">minimizer_kwargs</span><span class="p">[</span><span class="s2">&quot;callback&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">basinhopping_callback</span>
+
+            <span class="n">bh_res</span> <span class="o">=</span> <span class="n">optimize</span><span class="o">.</span><span class="n">basinhopping</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">objective_func</span><span class="p">,</span>
+                <span class="n">x0</span><span class="p">,</span>
+                <span class="n">niter</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+                <span class="c1">#stepsize=1,</span>
+                <span class="n">T</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+                <span class="n">minimizer_kwargs</span><span class="o">=</span><span class="n">minimizer_kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">bh_res</span><span class="o">.</span><span class="n">lowest_optimization_result</span>
+
+        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;L-BFGS-B&quot;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">optimize</span><span class="o">.</span><span class="n">minimize</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">objective_func</span><span class="p">,</span>
+                <span class="n">x0</span><span class="p">,</span>
+                <span class="n">method</span><span class="o">=</span><span class="s2">&quot;L-BFGS-B&quot;</span><span class="p">,</span>
+                <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
+                <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;maxiter&quot;</span><span class="p">:</span> <span class="mi">200</span><span class="p">,</span> <span class="s2">&quot;ftol&quot;</span><span class="p">:</span> <span class="mf">1e-12</span><span class="p">,</span> <span class="s2">&quot;gtol&quot;</span><span class="p">:</span> <span class="mf">1e-08</span><span class="p">},</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;dual_annealing&#39;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">optimize</span><span class="o">.</span><span class="n">dual_annealing</span><span class="p">(</span>
+                <span class="n">func</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">objective_func</span><span class="p">,</span>
+                <span class="n">x0</span> <span class="o">=</span> <span class="n">x0</span><span class="p">,</span>
+                <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
+                <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+                <span class="n">maxiter</span><span class="o">=</span><span class="mi">2000</span> 
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;[solver.numerical] Optimization method not implemented&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">_timings</span><span class="p">[</span><span class="s2">&quot;solve.numerical.optimitize.end&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span> 
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;[solver.numerical] Optimization failed.&quot;</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">_timings</span><span class="p">[</span><span class="s2">&quot;solve.numerical.replacement.start&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span> 
+        <span class="n">sol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_replace_objects_with_sol_num</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">mapping_subs</span><span class="p">,</span> <span class="n">red_full_mapping</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">_timings</span><span class="p">[</span><span class="s2">&quot;solve.numerical.replacement.end&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span> 
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">_timings</span><span class="p">[</span><span class="s2">&quot;solve.numerical.analysis.start&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">numerical_analysis</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">_timings</span><span class="p">[</span><span class="s2">&quot;solve.numerical.analysis.end&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span> 
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">get_all_objects</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="SolverNamespace.has_any_overlapping_points">
+<a class="viewcode-back" href="../../source/pygeox_solver.html#pygeox.solver.SolverNamespace.has_any_overlapping_points">[docs]</a>
+    <span class="k">def</span> <span class="nf">has_any_overlapping_points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">):</span>
+        <span class="n">point_coords_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">get_points</span><span class="p">()</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">point_coords_dict</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">distances_condensed</span> <span class="o">=</span> <span class="n">pdist</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="n">dist_matrix</span> <span class="o">=</span> <span class="n">squareform</span><span class="p">(</span><span class="n">distances_condensed</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span><span class="p">(</span><span class="n">dist_matrix</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">dist_matrix</span> <span class="o">&lt;</span> <span class="n">threshold</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SolverNamespace.numerical_analysis">
+<a class="viewcode-back" href="../../source/pygeox_solver.html#pygeox.solver.SolverNamespace.numerical_analysis">[docs]</a>
+    <span class="k">def</span> <span class="nf">numerical_analysis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Evaluate and report the quality of a numerical solution.</span>
+
+<span class="sd">        Prints objective value, satisfaction of equality, inequality, strict,</span>
+<span class="sd">        and not-equal constraints, and warns about overlapping points.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x: Optional solution vector to evaluate.</span>
+<span class="sd">            verbose: Whether to print detailed report.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Analysis summary including objective and constraint values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_internal_sol</span>
+
+        <span class="k">def</span> <span class="nf">eval_subs</span><span class="p">(</span><span class="n">subs</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">[(</span><span class="n">desc</span><span class="p">,</span> <span class="n">expr</span><span class="p">,</span> <span class="n">f</span><span class="p">(</span><span class="o">*</span><span class="n">x</span><span class="p">))</span> <span class="k">for</span> <span class="p">(</span><span class="n">desc</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">expr</span><span class="p">)</span> <span class="ow">in</span> <span class="n">subs</span><span class="p">]</span>
+
+        <span class="n">eq_vals</span> <span class="o">=</span> <span class="n">eval_subs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_objectives</span><span class="p">[</span><span class="s2">&quot;equality&quot;</span><span class="p">])</span>
+        <span class="n">geq_vals</span> <span class="o">=</span> <span class="n">eval_subs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_objectives</span><span class="p">[</span><span class="s2">&quot;geq&quot;</span><span class="p">])</span>
+        <span class="n">strict_vals</span> <span class="o">=</span> <span class="n">eval_subs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_objectives</span><span class="p">[</span><span class="s2">&quot;strict&quot;</span><span class="p">])</span>
+        <span class="n">neq_vals</span> <span class="o">=</span> <span class="n">eval_subs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_objectives</span><span class="p">[</span><span class="s2">&quot;neq&quot;</span><span class="p">])</span>
+        <span class="n">obj_val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">objective_func</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="c1"># penalty_val = self.penalty_func(x) if self.penalty_func else None</span>
+
+        <span class="c1"># Status logic</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">obj_val</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">obj_val</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;failure&quot;</span>
+        <span class="k">elif</span> <span class="n">obj_val</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">strict_tol</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;success&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;failure&quot;</span>
+
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="n">total_width</span> <span class="o">=</span> <span class="mi">40</span> <span class="o">+</span> <span class="mi">30</span> <span class="o">+</span> <span class="mi">12</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">3</span>
+
+            <span class="k">def</span> <span class="nf">print_section</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">vals</span><span class="p">,</span> <span class="n">check_fn</span><span class="p">,</span> <span class="n">symbol</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">vals</span><span class="p">:</span>
+                    <span class="k">return</span>  <span class="c1"># Do not print empty sections</span>
+
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="n">total_width</span><span class="p">)</span>
+                <span class="c1"># Adjusted header formatting</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;Name&#39;</span><span class="si">:</span><span class="s2">&lt;40</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;Equation&#39;</span><span class="si">:</span><span class="s2">&lt;30</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;Value&#39;</span><span class="si">:</span><span class="s2">&gt;12</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39; &#39;</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>  <span class="c1"># Added extra space for checkmark column</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="n">total_width</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">desc</span><span class="p">,</span> <span class="n">eqn</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">vals</span><span class="p">:</span>
+                    <span class="n">ok</span> <span class="o">=</span> <span class="n">check_fn</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+                    <span class="n">check</span> <span class="o">=</span> <span class="s2">&quot;✅&quot;</span> <span class="k">if</span> <span class="n">ok</span> <span class="k">else</span> <span class="s2">&quot;❌&quot;</span>
+                    <span class="n">desc_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">desc</span><span class="p">)[:</span><span class="mi">40</span><span class="p">]</span>
+                    <span class="n">eqn_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">eqn</span><span class="p">)[:</span><span class="mi">30</span><span class="p">]</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">desc_str</span><span class="si">:</span><span class="s2">&lt;40</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">eqn_str</span><span class="si">:</span><span class="s2">&lt;30</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">val</span><span class="si">:</span><span class="s2">12.4e</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="n">check</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="n">total_width</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Objective function value: </span><span class="si">{</span><span class="n">obj_val</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2"> | Status: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="n">total_width</span><span class="p">)</span>
+
+            <span class="n">print_section</span><span class="p">(</span>
+                <span class="s2">&quot;Equality constraints (should be ≈ 0):&quot;</span><span class="p">,</span>
+                <span class="n">eq_vals</span><span class="p">,</span>
+                <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="nb">abs</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">strict_tol</span><span class="p">,</span>
+                <span class="s2">&quot;≈&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">print_section</span><span class="p">(</span>
+                <span class="s2">&quot;Inequality constraints (should be ≥ 0):&quot;</span><span class="p">,</span>
+                <span class="n">geq_vals</span><span class="p">,</span>
+                <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">v</span> <span class="o">&gt;</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">strict_tol</span><span class="p">,</span>
+                <span class="s2">&quot;≥&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">print_section</span><span class="p">(</span>
+                <span class="s2">&quot;Strict constraints (should be &gt; 0):&quot;</span><span class="p">,</span>
+                <span class="n">strict_vals</span><span class="p">,</span>
+                <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">v</span> <span class="o">&gt;</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">strict_tol</span><span class="p">,</span>
+                <span class="s2">&quot;&gt;&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">print_section</span><span class="p">(</span>
+                <span class="s2">&quot;Not-equal constraints (should be ≠ 0):&quot;</span><span class="p">,</span>
+                <span class="n">neq_vals</span><span class="p">,</span>
+                <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="nb">abs</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">strict_tol</span><span class="p">,</span>
+                <span class="s2">&quot;≠&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="n">total_width</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_any_overlapping_points</span><span class="p">():</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="s2">&quot;[WARNING] Overlapping points found. To avoid overlapping points, please consider adding a penalty function to the numerical solver or changing penalty_type.&quot;</span>
+                <span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;objective&quot;</span><span class="p">:</span> <span class="n">obj_val</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="p">,</span>
+            <span class="s2">&quot;equality&quot;</span><span class="p">:</span> <span class="n">eq_vals</span><span class="p">,</span>
+            <span class="s2">&quot;geq&quot;</span><span class="p">:</span> <span class="n">geq_vals</span><span class="p">,</span>
+            <span class="s2">&quot;strict&quot;</span><span class="p">:</span> <span class="n">strict_vals</span><span class="p">,</span>
+            <span class="s2">&quot;neq&quot;</span><span class="p">:</span> <span class="n">neq_vals</span><span class="p">,</span>
+        <span class="p">}</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Rafael Cabral.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

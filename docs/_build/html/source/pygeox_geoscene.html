@@ -1,0 +1,345 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>&lt;no title&gt; &mdash; PyGeoX 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.png"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=938c9ccc"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            PyGeoX
+              <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pygeox.html">Main geometric scene</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pygeox.html#module-pygeox.add_objects">Add geometric objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pygeox.html#module-pygeox.relationship">Add relationships</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pygeox.html#module-pygeox.constraint">Add constraints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pygeox.html#module-pygeox.solver">Solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pygeox.html#basic-objects-point-lines-circles-arcs">Basic Objects (point, lines, circles, arcs)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pygeox.html#module-pygeox.custom_objects">Polygons</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pygeox.html#animation-under-construction">Animation (Under construction)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PyGeoX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">&lt;no title&gt;</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/source/pygeox_geoscene.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <blockquote>
+<div><p>GeoScene</p>
+</div></blockquote>
+<hr class="docutils" />
+<p id="module-pygeox.geoscene">GeoScene module: Core framework for geometric scene management, constraint handling,
+and problem solving.</p>
+<p>This module defines the GeoScene class, which serves as the central manager for
+geometric objects (points, lines, circles, polygons, arcs) and constraints. It
+provides a unified API to add, retrieve, and manipulate geometric elements, define
+symbolic constraints between them, and invoke solvers to find solutions to geometric
+problems.</p>
+<p>Key features include:
+- Automatic management and storage of geometric objects.
+- Symbolic constraint definition with human-readable descriptions.
+- Integration of namespaces for relationships, constraint addition, solving,</p>
+<blockquote>
+<div><p>animation, and geometric proofs.</p>
+</div></blockquote>
+<ul class="simple">
+<li><p>Sketching capability by auto-creating points when referenced by name.</p></li>
+<li><p>Utilities for calculating angles, plotting scenes, and proof management.</p></li>
+</ul>
+<p>The GeoScene class acts as the main entry point for users to programmatically
+create, analyze, and visualize geometry problems and their solutions.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="pygeox.geoscene.GeoScene">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pygeox.geoscene.</span></span><span class="sig-name descname"><span class="pre">GeoScene</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">domain</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/geoscene.html#GeoScene"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.geoscene.GeoScene" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Manages all geometric objects and constraints, and solves for unknown variables.
+This class is the main entry point for defining, manipulating, and solving
+geometric problems. It provides sketching capabilities by automatically creating
+points when referenced by name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>domain</strong> (<em>Any</em><em> | </em><em>None</em>)</p>
+</dd>
+</dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="pygeox.geoscene.GeoScene.ProvingContext">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ProvingContext</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scene_instance</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/geoscene.html#GeoScene.ProvingContext"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.geoscene.GeoScene.ProvingContext" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Initialize proving context manager.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>scene_instance</strong> – GeoScene instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.geoscene.GeoScene.add_constraint">
+<span class="sig-name descname"><span class="pre">add_constraint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">equation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/geoscene.html#GeoScene.add_constraint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.geoscene.GeoScene.add_constraint" title="Link to this definition"></a></dt>
+<dd><p>Add a symbolic equation constraint with a description.</p>
+<p>If in proving mode, stores constraint for proof; else adds to main constraints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>equation</strong> (<em>Basic</em>) – Sympy symbolic equation.</p></li>
+<li><p><strong>description</strong> (<em>str</em>) – Human-readable description.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.geoscene.GeoScene.add_mapping_constraint">
+<span class="sig-name descname"><span class="pre">add_mapping_constraint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">equation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/geoscene.html#GeoScene.add_mapping_constraint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.geoscene.GeoScene.add_mapping_constraint" title="Link to this definition"></a></dt>
+<dd><p>Add a mapping constraint equation used for parameter mapping.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>equation</strong> (<em>Basic</em>) – Sympy symbolic equation.</p></li>
+<li><p><strong>description</strong> (<em>str</em>) – Human-readable description.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.geoscene.GeoScene.add_object">
+<span class="sig-name descname"><span class="pre">add_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/geoscene.html#GeoScene.add_object"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.geoscene.GeoScene.add_object" title="Link to this definition"></a></dt>
+<dd><p>Add a geometric object to the scene under the given type and name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obj_type</strong> (<em>str</em>) – Type of the object (e.g., ‘Point’, ‘Circle’).</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – Name of the object.</p></li>
+<li><p><strong>obj</strong> (<em>Any</em>) – The geometric object instance.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.geoscene.GeoScene.add_parameter">
+<span class="sig-name descname"><span class="pre">add_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'x'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Problem'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bound</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/geoscene.html#GeoScene.add_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.geoscene.GeoScene.add_parameter" title="Link to this definition"></a></dt>
+<dd><p>Add a symbolic parameter with metadata to the scene.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>symbol</strong> (<em>Symbol</em>) – The sympy.Symbol representing the parameter.</p></li>
+<li><p><strong>type</strong> (<em>str</em>) – Parameter type (default “x”).</p></li>
+<li><p><strong>full</strong> (<em>bool</em>) – Whether parameter is fully active.</p></li>
+<li><p><strong>origin</strong> (<em>str</em>) – Origin description.</p></li>
+<li><p><strong>bound</strong> – Optional numeric bounds [min, max].</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The symbol added.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.geoscene.GeoScene.angle">
+<span class="sig-name descname"><span class="pre">angle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vertex</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/geoscene.html#GeoScene.angle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.geoscene.GeoScene.angle" title="Link to this definition"></a></dt>
+<dd><p>Calculate the angle (degrees between 0 and 180) at vertex between point1 and point2.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>point1</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>) – First point defining the angle.</p></li>
+<li><p><strong>vertex</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>) – Vertex point of the angle.</p></li>
+<li><p><strong>point2</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>) – Second point defining the angle.</p></li>
+<li><p><strong>signed</strong> (<em>bool</em>) – If True, returns signed angle (CCW positive).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Angle in degrees.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int | float | <em>Expr</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.geoscene.GeoScene.get_all_objects">
+<span class="sig-name descname"><span class="pre">get_all_objects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/geoscene.html#GeoScene.get_all_objects"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.geoscene.GeoScene.get_all_objects" title="Link to this definition"></a></dt>
+<dd><p>Retrieve all objects of a given type or all objects if no type is specified.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>obj_type</strong> (<em>str</em><em> | </em><em>None</em>) – Optional type of objects to retrieve.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary of object names to objects.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>Dict</em>[str, <em>Any</em>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.geoscene.GeoScene.get_object">
+<span class="sig-name descname"><span class="pre">get_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/geoscene.html#GeoScene.get_object"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.geoscene.GeoScene.get_object" title="Link to this definition"></a></dt>
+<dd><p>Retrieve a specific object by type and name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obj_type</strong> (<em>str</em>) – Type of the object.</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – Name of the object.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The geometric object or None if not found.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>Any</em> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.geoscene.GeoScene.get_points">
+<span class="sig-name descname"><span class="pre">get_points</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/geoscene.html#GeoScene.get_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.geoscene.GeoScene.get_points" title="Link to this definition"></a></dt>
+<dd><p>Get dictionary of all points in the scene with their (x, y) coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict mapping point names to (x, y) coordinate tuples.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.geoscene.GeoScene.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_axis_grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_fig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/geoscene.html#GeoScene.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.geoscene.GeoScene.plot" title="Link to this definition"></a></dt>
+<dd><p>Plot all geometric objects in the scene.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>show_names</strong> (<em>bool</em>) – Show object names on plot.</p></li>
+<li><p><strong>show_axis_grid</strong> (<em>bool</em>) – Show axis grid.</p></li>
+<li><p><strong>xlim</strong> (<em>tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>None</em>) – X-axis limits.</p></li>
+<li><p><strong>ylim</strong> (<em>tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>None</em>) – Y-axis limits.</p></li>
+<li><p><strong>return_fig</strong> (<em>bool</em>) – If True, return matplotlib figure object.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Matplotlib figure if return_fig is True; otherwise None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.geoscene.GeoScene.prove">
+<span class="sig-name descname"><span class="pre">prove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/geoscene.html#GeoScene.prove"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.geoscene.GeoScene.prove" title="Link to this definition"></a></dt>
+<dd><p>Run the prover function on the accumulated proof statements and constraints.
+Updates the proof_statements with prover results.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.geoscene.GeoScene.proving">
+<span class="sig-name descname"><span class="pre">proving</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/geoscene.html#GeoScene.proving"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.geoscene.GeoScene.proving" title="Link to this definition"></a></dt>
+<dd><p>Create a context manager for defining proof constraints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ProvingContext instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Rafael Cabral.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

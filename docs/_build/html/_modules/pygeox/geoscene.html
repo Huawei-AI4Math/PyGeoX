@@ -1,0 +1,523 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pygeox.geoscene &mdash; PyGeoX 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../../_static/favicon.png"/>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=938c9ccc"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            PyGeoX
+              <img src="../../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pygeox.html">Main geometric scene</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pygeox.html#module-pygeox.add_objects">Add geometric objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pygeox.html#module-pygeox.relationship">Add relationships</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pygeox.html#module-pygeox.constraint">Add constraints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pygeox.html#module-pygeox.solver">Solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pygeox.html#basic-objects-point-lines-circles-arcs">Basic Objects (point, lines, circles, arcs)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pygeox.html#module-pygeox.custom_objects">Polygons</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pygeox.html#animation-under-construction">Animation (Under construction)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">PyGeoX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pygeox.geoscene</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pygeox.geoscene</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">GeoScene module: Core framework for geometric scene management, constraint handling,</span>
+<span class="sd">and problem solving.</span>
+
+<span class="sd">This module defines the GeoScene class, which serves as the central manager for</span>
+<span class="sd">geometric objects (points, lines, circles, polygons, arcs) and constraints. It</span>
+<span class="sd">provides a unified API to add, retrieve, and manipulate geometric elements, define</span>
+<span class="sd">symbolic constraints between them, and invoke solvers to find solutions to geometric</span>
+<span class="sd">problems.</span>
+
+<span class="sd">Key features include:</span>
+<span class="sd">- Automatic management and storage of geometric objects.</span>
+<span class="sd">- Symbolic constraint definition with human-readable descriptions.</span>
+<span class="sd">- Integration of namespaces for relationships, constraint addition, solving,</span>
+<span class="sd">  animation, and geometric proofs.</span>
+<span class="sd">- Sketching capability by auto-creating points when referenced by name.</span>
+<span class="sd">- Utilities for calculating angles, plotting scenes, and proof management.</span>
+
+<span class="sd">The GeoScene class acts as the main entry point for users to programmatically</span>
+<span class="sd">create, analyze, and visualize geometry problems and their solutions.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">deprecated</span>
+
+<span class="kn">import</span> <span class="nn">sympy</span>
+<span class="kn">from</span> <span class="nn">typeguard</span> <span class="kn">import</span> <span class="n">typechecked</span>
+
+<span class="kn">from</span> <span class="nn">.add_objects</span> <span class="kn">import</span> <span class="n">AddNamespace</span>
+<span class="kn">from</span> <span class="nn">.animate</span> <span class="kn">import</span> <span class="n">AnimateNamespace</span>
+<span class="kn">from</span> <span class="nn">.basic_objects</span> <span class="kn">import</span> <span class="n">Point</span>
+<span class="kn">from</span> <span class="nn">.constraint</span> <span class="kn">import</span> <span class="n">ConstraintNamespace</span>
+<span class="kn">from</span> <span class="nn">.relationship</span> <span class="kn">import</span> <span class="n">RelationshipNamespace</span>
+<span class="kn">from</span> <span class="nn">.solver</span> <span class="kn">import</span> <span class="n">SolverNamespace</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">normalize_domain</span><span class="p">,</span> <span class="n">plot_scene</span>
+<span class="kn">from</span> <span class="nn">.prover</span> <span class="kn">import</span> <span class="n">prover_func</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
+
+<span class="c1"># Type alias for coordinate values</span>
+<span class="n">Coordinate</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">sympy</span><span class="o">.</span><span class="n">Expr</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="GeoScene">
+<a class="viewcode-back" href="../../source/pygeox_geoscene.html#pygeox.geoscene.GeoScene">[docs]</a>
+<span class="nd">@typechecked</span>
+<span class="k">class</span> <span class="nc">GeoScene</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Manages all geometric objects and constraints, and solves for unknown variables.</span>
+<span class="sd">    This class is the main entry point for defining, manipulating, and solving</span>
+<span class="sd">    geometric problems. It provides sketching capabilities by automatically creating</span>
+<span class="sd">    points when referenced by name.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">domain</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_domain_consts</span> <span class="o">=</span> <span class="n">normalize_domain</span><span class="p">(</span><span class="n">domain</span><span class="p">)</span>
+
+        <span class="c1"># A unified dictionary for all geometric objects</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">objects</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;Point&quot;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s2">&quot;Line&quot;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s2">&quot;Circle&quot;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s2">&quot;MinorArc&quot;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s2">&quot;MajorArc&quot;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s2">&quot;Polygon&quot;</span><span class="p">:</span> <span class="p">{},</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_relationship_num</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_relationships</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_moving_points</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mapping_constraints</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">solution</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timings</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;scene_init&quot;</span><span class="p">:</span> <span class="n">time</span><span class="p">()}</span>
+
+        
+        <span class="c1"># Namespaces for a cleaner API</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">relate</span> <span class="o">=</span> <span class="n">RelationshipNamespace</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span> <span class="o">=</span> <span class="n">AddNamespace</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">constraint</span> <span class="o">=</span> <span class="n">ConstraintNamespace</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver</span> <span class="o">=</span> <span class="n">SolverNamespace</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">animate</span> <span class="o">=</span> <span class="n">AnimateNamespace</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="c1"># dealing with proofs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proof_statements</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_in_proving_mode</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+    <span class="k">def</span> <span class="nf">_check_name_exists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">obj_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if an object name already exists in the scene.</span>
+
+<span class="sd">        Returns a pointer to the existing object if found (except for circles),</span>
+<span class="sd">        otherwise raises an error for duplicate circle names.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name: Name to check.</span>
+<span class="sd">            obj: The new object.</span>
+<span class="sd">            obj_type: Type of the new object.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple of (name, object) to use.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">existing_category_name</span><span class="p">,</span> <span class="n">objects_in_category</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">objects_in_category</span><span class="p">:</span>
+                <span class="n">existing_object_with_name</span> <span class="o">=</span> <span class="n">objects_in_category</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">obj_type</span> <span class="o">==</span> <span class="s2">&quot;Circle&quot;</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Error: Circle with name &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; already exists.&quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;Please choose another name for your Circle.&quot;</span>
+                    <span class="p">)</span>
+                <span class="k">elif</span> <span class="n">obj_type</span> <span class="o">==</span> <span class="s2">&quot;Point&quot;</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Error: Point with name &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; already exists. &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;Please choose another name for your point or remove previous point addition.&quot;</span>
+                    <span class="p">)</span>      
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">obj</span> <span class="o">=</span> <span class="n">existing_object_with_name</span>
+                    <span class="nb">print</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;[INFO] Object with name </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> already exists in scene. Passing a pointer to the existing object.&quot;</span>
+                    <span class="p">)</span>
+                    <span class="k">return</span> <span class="n">name</span><span class="p">,</span> <span class="n">obj</span>
+
+        <span class="k">return</span> <span class="n">name</span><span class="p">,</span> <span class="n">obj</span>
+
+<div class="viewcode-block" id="GeoScene.add_object">
+<a class="viewcode-back" href="../../source/pygeox_geoscene.html#pygeox.geoscene.GeoScene.add_object">[docs]</a>
+    <span class="k">def</span> <span class="nf">add_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a geometric object to the scene under the given type and name.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            obj_type: Type of the object (e.g., &#39;Point&#39;, &#39;Circle&#39;).</span>
+<span class="sd">            name: Name of the object.</span>
+<span class="sd">            obj: The geometric object instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">obj_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">objects</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">objects</span><span class="p">[</span><span class="n">obj_type</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">name</span><span class="p">,</span> <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_name_exists</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">obj_type</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">objects</span><span class="p">[</span><span class="n">obj_type</span><span class="p">][</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span></div>
+
+
+<div class="viewcode-block" id="GeoScene.get_object">
+<a class="viewcode-back" href="../../source/pygeox_geoscene.html#pygeox.geoscene.GeoScene.get_object">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieve a specific object by type and name.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            obj_type: Type of the object.</span>
+<span class="sd">            name: Name of the object.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The geometric object or None if not found.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">obj_type</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GeoScene.get_all_objects">
+<a class="viewcode-back" href="../../source/pygeox_geoscene.html#pygeox.geoscene.GeoScene.get_all_objects">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_all_objects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieve all objects of a given type or all objects if no type is specified.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            obj_type: Optional type of objects to retrieve.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dictionary of object names to objects.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">obj_type</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">obj_type</span><span class="p">,</span> <span class="p">{})</span>
+
+        <span class="n">all_objs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">obj_dict</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">all_objs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">obj_dict</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">all_objs</span></div>
+
+
+<div class="viewcode-block" id="GeoScene.get_points">
+<a class="viewcode-back" href="../../source/pygeox_geoscene.html#pygeox.geoscene.GeoScene.get_points">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_points</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get dictionary of all points in the scene with their (x, y) coordinates.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dict mapping point names to (x, y) coordinate tuples.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">point_data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">point</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_all_objects</span><span class="p">(</span><span class="s2">&quot;Point&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">point_data</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">point</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">point</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">point_data</span></div>
+
+
+<div class="viewcode-block" id="GeoScene.add_parameter">
+<a class="viewcode-back" href="../../source/pygeox_geoscene.html#pygeox.geoscene.GeoScene.add_parameter">[docs]</a>
+    <span class="k">def</span> <span class="nf">add_parameter</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">symbol</span><span class="p">:</span> <span class="n">sympy</span><span class="o">.</span><span class="n">Symbol</span><span class="p">,</span>
+        <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span>
+        <span class="n">full</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">origin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Problem&quot;</span><span class="p">,</span>
+        <span class="n">bound</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a symbolic parameter with metadata to the scene.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            symbol: The sympy.Symbol representing the parameter.</span>
+<span class="sd">            type: Parameter type (default &quot;x&quot;).</span>
+<span class="sd">            full: Whether parameter is fully active.</span>
+<span class="sd">            origin: Origin description.</span>
+<span class="sd">            bound: Optional numeric bounds [min, max].</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The symbol added.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">bound</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">bound</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">symbol</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;symbol&quot;</span><span class="p">:</span> <span class="n">symbol</span><span class="p">,</span>
+            <span class="s2">&quot;bound&quot;</span><span class="p">:</span> <span class="n">bound</span><span class="p">,</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span>
+            <span class="s2">&quot;full&quot;</span><span class="p">:</span> <span class="n">full</span><span class="p">,</span>
+            <span class="s2">&quot;origin&quot;</span><span class="p">:</span> <span class="n">origin</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">symbol</span></div>
+
+        
+<div class="viewcode-block" id="GeoScene.add_constraint">
+<a class="viewcode-back" href="../../source/pygeox_geoscene.html#pygeox.geoscene.GeoScene.add_constraint">[docs]</a>
+    <span class="k">def</span> <span class="nf">add_constraint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">equation</span><span class="p">:</span> <span class="n">sympy</span><span class="o">.</span><span class="n">Basic</span><span class="p">,</span> <span class="n">description</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a symbolic equation constraint with a description.</span>
+
+<span class="sd">        If in proving mode, stores constraint for proof; else adds to main constraints.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            equation: Sympy symbolic equation.</span>
+<span class="sd">            description: Human-readable description.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dic_to_add</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;equation&quot;</span><span class="p">:</span> <span class="n">equation</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="n">description</span><span class="p">,</span> <span class="s2">&quot;relationship_id&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_relationship_num</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">relate</span><span class="o">.</span><span class="n">_inside</span> <span class="k">else</span> <span class="kc">None</span><span class="p">}</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_in_proving_mode</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">proof_statements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dic_to_add</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dic_to_add</span><span class="p">)</span></div>
+
+    
+    <span class="k">def</span> <span class="nf">_add_relationship</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cathegory</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_relationship_num</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_relationships</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_relationship_num</span><span class="p">,</span> <span class="s2">&quot;relationship&quot;</span><span class="p">:</span> <span class="n">cathegory</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="n">args</span><span class="p">,</span>  <span class="s2">&quot;to_prove&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_in_proving_mode</span><span class="p">})</span>
+
+
+<div class="viewcode-block" id="GeoScene.add_mapping_constraint">
+<a class="viewcode-back" href="../../source/pygeox_geoscene.html#pygeox.geoscene.GeoScene.add_mapping_constraint">[docs]</a>
+    <span class="k">def</span> <span class="nf">add_mapping_constraint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">equation</span><span class="p">:</span> <span class="n">sympy</span><span class="o">.</span><span class="n">Basic</span><span class="p">,</span> <span class="n">description</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a mapping constraint equation used for parameter mapping.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            equation: Sympy symbolic equation.</span>
+<span class="sd">            description: Human-readable description.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mapping_constraints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="p">{</span><span class="s2">&quot;equation&quot;</span><span class="p">:</span> <span class="n">equation</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="n">description</span><span class="p">}</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GeoScene.angle">
+<a class="viewcode-back" href="../../source/pygeox_geoscene.html#pygeox.geoscene.GeoScene.angle">[docs]</a>
+    <span class="nd">@deprecated</span><span class="p">(</span><span class="s2">&quot;Instead of using this function, you should use scene.add.angle&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">angle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point1</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span> <span class="n">vertex</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span> <span class="n">point2</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span> <span class="n">signed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Coordinate</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the angle (degrees between 0 and 180) at vertex between point1 and point2.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            point1: First point defining the angle.</span>
+<span class="sd">            vertex: Vertex point of the angle.</span>
+<span class="sd">            point2: Second point defining the angle.</span>
+<span class="sd">            signed: If True, returns signed angle (CCW positive).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Angle in degrees.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">vertex</span><span class="o">.</span><span class="n">angle</span><span class="p">(</span><span class="n">point1</span><span class="p">,</span> <span class="n">point2</span><span class="p">,</span> <span class="n">signed</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get an object by name via dictionary-style access.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name: Object name.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The object matching the name.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            KeyError if object not found.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">obj_dict</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">obj_dict</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">obj_dict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Object with name &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; not found in the scene.&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return string summary of the GeoScene.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            String showing number of objects and constraints.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">num_objs</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;GeoScene with </span><span class="si">{</span><span class="n">num_objs</span><span class="si">}</span><span class="s2"> objects and </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span><span class="si">}</span><span class="s2"> constraints&quot;</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="GeoScene.plot">
+<a class="viewcode-back" href="../../source/pygeox_geoscene.html#pygeox.geoscene.GeoScene.plot">[docs]</a>
+    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">show_names</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">show_axis_grid</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">xlim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ylim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">return_fig</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plot all geometric objects in the scene.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            show_names: Show object names on plot.</span>
+<span class="sd">            show_axis_grid: Show axis grid.</span>
+<span class="sd">            xlim: X-axis limits.</span>
+<span class="sd">            ylim: Y-axis limits.</span>
+<span class="sd">            return_fig: If True, return matplotlib figure object.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Matplotlib figure if return_fig is True; otherwise None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plot_scene</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">show_names</span><span class="o">=</span><span class="n">show_names</span><span class="p">,</span>
+            <span class="n">show_axis_grid</span><span class="o">=</span><span class="n">show_axis_grid</span><span class="p">,</span>
+            <span class="n">xlim</span><span class="o">=</span><span class="n">xlim</span><span class="p">,</span>
+            <span class="n">ylim</span><span class="o">=</span><span class="n">ylim</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">return_fig</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">fig</span></div>
+
+    
+<div class="viewcode-block" id="GeoScene.ProvingContext">
+<a class="viewcode-back" href="../../source/pygeox_geoscene.html#pygeox.geoscene.GeoScene.ProvingContext">[docs]</a>
+    <span class="k">class</span> <span class="nc">ProvingContext</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize proving context manager.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            scene_instance: GeoScene instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scene_instance</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Initialize proving context manager.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                scene_instance: GeoScene instance.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scene</span> <span class="o">=</span> <span class="n">scene_instance</span>
+
+        <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Enter proving mode.</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                RelationshipNamespace for defining constraints in proof.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">_in_proving_mode</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">_proof_statements</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">relate</span>
+
+        <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Exit proving mode.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">_in_proving_mode</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="GeoScene.proving">
+<a class="viewcode-back" href="../../source/pygeox_geoscene.html#pygeox.geoscene.GeoScene.proving">[docs]</a>
+    <span class="k">def</span> <span class="nf">proving</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a context manager for defining proof constraints.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ProvingContext instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ProvingContext</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GeoScene.prove">
+<a class="viewcode-back" href="../../source/pygeox_geoscene.html#pygeox.geoscene.GeoScene.prove">[docs]</a>
+    <span class="k">def</span> <span class="nf">prove</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run the prover function on the accumulated proof statements and constraints.</span>
+<span class="sd">        Updates the proof_statements with prover results.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timings</span><span class="p">[</span><span class="s2">&quot;prover.start&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proof_statements</span> <span class="o">=</span> <span class="n">prover_func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">proof_statements</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timings</span><span class="p">[</span><span class="s2">&quot;prover.end&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Rafael Cabral.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

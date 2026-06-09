@@ -1,0 +1,262 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Examples &mdash; PyGeoX 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.png"/>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=938c9ccc"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Main geometric scene" href="pygeox.html" />
+    <link rel="prev" title="PyGeoX documentation" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            PyGeoX
+              <img src="_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#diagram-construction-calculation-problem">Diagram construction + calculation problem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#diagram-construction-proof-problem-butterfly-theorem">Diagram construction + proof problem (Butterfly theorem)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dynamic-geometry-with-animation-two-moving-points">Dynamic geometry with animation: two moving points</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pygeox.html">Main geometric scene</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pygeox.html#module-pygeox.add_objects">Add geometric objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pygeox.html#module-pygeox.relationship">Add relationships</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pygeox.html#module-pygeox.constraint">Add constraints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pygeox.html#module-pygeox.solver">Solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pygeox.html#basic-objects-point-lines-circles-arcs">Basic Objects (point, lines, circles, arcs)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pygeox.html#module-pygeox.custom_objects">Polygons</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pygeox.html#animation-under-construction">Animation (Under construction)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PyGeoX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Examples</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/examples.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="examples">
+<h1>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h1>
+<section id="diagram-construction-calculation-problem">
+<h2>Diagram construction + calculation problem<a class="headerlink" href="#diagram-construction-calculation-problem" title="Link to this heading"></a></h2>
+<p>Problem: In a regular hexagon ABCDEF, a circle O passing through points E and F is tangent to sides AB and CD at points G and H, respectively, and intersects side DE at point M. Lines GM and FH intersect at point N, the measure of angle ∠GNF is ___°.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pygeox</span> <span class="kn">import</span> <span class="n">GeoScene</span><span class="p">,</span> <span class="n">LineSegment</span>
+
+<span class="n">scene</span> <span class="o">=</span> <span class="n">GeoScene</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">O</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">points</span><span class="p">([</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="s2">&quot;D&quot;</span><span class="p">,</span> <span class="s2">&quot;E&quot;</span><span class="p">,</span> <span class="s2">&quot;F&quot;</span><span class="p">,</span> <span class="s2">&quot;G&quot;</span><span class="p">,</span> <span class="s2">&quot;H&quot;</span><span class="p">,</span> <span class="s2">&quot;M&quot;</span><span class="p">,</span> <span class="s2">&quot;N&quot;</span><span class="p">,</span> <span class="s2">&quot;O&quot;</span><span class="p">])</span>
+
+<span class="c1"># In a regular hexagon ABCDEF</span>
+<span class="n">hexagon</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">regular_hexagon</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">F</span><span class="p">)</span>
+
+<span class="c1"># a circle O passing through points E and F</span>
+<span class="n">circle</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">circle</span><span class="p">(</span><span class="n">O</span><span class="p">)</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">relate</span><span class="o">.</span><span class="n">points_lie_on</span><span class="p">([</span><span class="n">E</span><span class="p">,</span> <span class="n">F</span><span class="p">],</span> <span class="n">circle</span><span class="p">)</span>
+
+<span class="c1"># tangent to sides AB and CD at points G and H</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">relate</span><span class="o">.</span><span class="n">tangent_to_circle</span><span class="p">(</span><span class="n">LineSegment</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">),</span> <span class="n">circle</span><span class="p">,</span> <span class="n">G</span><span class="p">)</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">relate</span><span class="o">.</span><span class="n">tangent_to_circle</span><span class="p">(</span><span class="n">LineSegment</span><span class="p">(</span><span class="n">C</span><span class="p">,</span><span class="n">D</span><span class="p">),</span> <span class="n">circle</span><span class="p">,</span> <span class="n">H</span><span class="p">)</span>
+
+<span class="c1">## intersects side DE at point M</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">relate</span><span class="o">.</span><span class="n">line_intersects_circle_at</span><span class="p">(</span><span class="n">LineSegment</span><span class="p">(</span><span class="n">D</span><span class="p">,</span><span class="n">E</span><span class="p">),</span> <span class="n">circle</span><span class="p">,</span> <span class="n">M</span><span class="p">)</span>
+
+<span class="c1">## Lines GM and FH intersect at point N</span>
+<span class="n">Line_GM</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">line_segment</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">M</span><span class="p">)</span>
+<span class="n">Line_FH</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">line_segment</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">H</span><span class="p">)</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">relate</span><span class="o">.</span><span class="n">lines_intersect_at</span><span class="p">(</span><span class="n">Line_GM</span><span class="p">,</span> <span class="n">Line_FH</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+
+<span class="n">scene</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">numerical</span><span class="p">()</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><img alt="image" src="_images/img1.png" /></p>
+<p>The function <code class="docutils literal notranslate"><span class="pre">scene.solver.numerical()</span></code> finds one of possibly many valid configurations for the diagram. After, we can call any object property to find its numerical value.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># the measure of angle ∠GNF is ___°</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">angle</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="n">N</span><span class="p">,</span><span class="n">F</span><span class="p">)</span><span class="o">.</span><span class="n">evalf</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> 
+<span class="c1">#60</span>
+</pre></div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="diagram-construction-proof-problem-butterfly-theorem">
+<h2>Diagram construction + proof problem (Butterfly theorem)<a class="headerlink" href="#diagram-construction-proof-problem-butterfly-theorem" title="Link to this heading"></a></h2>
+<p>Problem: Let M be the midpoint of a chord PQ of a circle, through which two other chords AB and CD are drawn; AD and BC intersect chord PQ at X and Y correspondingly. Prove that M is the midpoint of XY.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pygeox</span> <span class="kn">import</span> <span class="n">GeoScene</span><span class="p">,</span> <span class="n">LineSegment</span>
+
+
+<span class="n">scene</span> <span class="o">=</span> <span class="n">GeoScene</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+
+<span class="n">M</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">O</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">points</span><span class="p">([</span><span class="s2">&quot;M&quot;</span><span class="p">,</span><span class="s2">&quot;P&quot;</span><span class="p">,</span><span class="s2">&quot;Q&quot;</span><span class="p">,</span><span class="s2">&quot;A&quot;</span><span class="p">,</span><span class="s2">&quot;B&quot;</span><span class="p">,</span><span class="s2">&quot;C&quot;</span><span class="p">,</span><span class="s2">&quot;D&quot;</span><span class="p">,</span><span class="s2">&quot;X&quot;</span><span class="p">,</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span><span class="s2">&quot;O&quot;</span><span class="p">])</span>
+
+<span class="c1"># Let M be the midpoint of a chord PQ of a circle, through which two other chords AB and CD are drawn</span>
+<span class="n">circle</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">circle</span><span class="p">(</span><span class="n">O</span><span class="p">)</span>
+<span class="n">l_AB</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">chord</span><span class="p">(</span><span class="n">circle</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">)</span>
+<span class="n">l_CD</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">chord</span><span class="p">(</span><span class="n">circle</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">D</span><span class="p">)</span>
+<span class="n">l_PQ</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">chord</span><span class="p">(</span><span class="n">circle</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">Q</span><span class="p">)</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">relate</span><span class="o">.</span><span class="n">is_midpoint</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">l_PQ</span><span class="p">)</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">relate</span><span class="o">.</span><span class="n">point_lies_on</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">l_CD</span><span class="p">)</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">relate</span><span class="o">.</span><span class="n">point_lies_on</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">l_AB</span><span class="p">)</span>
+
+<span class="c1"># AD and BC intersect chord PQ at X and Y correspondingly</span>
+<span class="n">l_AD</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">line_segment</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">D</span><span class="p">)</span>
+<span class="n">l_BC</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">line_segment</span><span class="p">(</span><span class="n">B</span><span class="p">,</span><span class="n">C</span><span class="p">)</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">relate</span><span class="o">.</span><span class="n">lines_intersect_at</span><span class="p">(</span><span class="n">l_AD</span><span class="p">,</span> <span class="n">l_PQ</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">relate</span><span class="o">.</span><span class="n">lines_intersect_at</span><span class="p">(</span><span class="n">l_BC</span><span class="p">,</span> <span class="n">l_PQ</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+
+<span class="c1"># Then M is the midpoint of XY.</span>
+<span class="k">with</span> <span class="n">scene</span><span class="o">.</span><span class="n">proving</span><span class="p">():</span>
+    <span class="n">scene</span><span class="o">.</span><span class="n">relate</span><span class="o">.</span><span class="n">is_midpoint</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">LineSegment</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">Y</span><span class="p">))</span>
+
+<span class="n">scene</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">numerical</span><span class="p">(</span><span class="n">distance_penalty</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><img alt="image" src="_images/img2.png" /></p>
+<p>Our built-in prover can prove “M is the midpoint of XY” based on the stated conditions.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">scene</span><span class="o">.</span><span class="n">prove</span><span class="p">()</span>
+<span class="c1">#Conclusion: 2*x_M - x_X - x_Y = 0</span>
+<span class="c1">#Final Remainder: 0</span>
+<span class="c1">#Verdict: PROVEN TRUE. The conclusion is a consequence of the hypotheses.</span>
+
+<span class="c1">#Conclusion: 2*y_M - y_X - y_Y = 0</span>
+<span class="c1">#Final Remainder: 0</span>
+<span class="c1">#Verdict: PROVEN TRUE. The conclusion is a consequence of the hypotheses.</span>
+
+</pre></div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="dynamic-geometry-with-animation-two-moving-points">
+<h2>Dynamic geometry with animation: two moving points<a class="headerlink" href="#dynamic-geometry-with-animation-two-moving-points" title="Link to this heading"></a></h2>
+<p>Problem: In the rhombus ABCD, draw line segment DE perpendicular to CD, where E is the point of intersection with diagonal AC. Connect BE. Point P is a moving point on segment BE, and construct the symmetry point P’ of point P with respect to line DE. Point Q is a moving point on diagonal AC, connecting PQ and DQ. If AE equals 14 and CE equals 18, then the maximum value of DQ - P’Q is ___.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pygeox</span> <span class="kn">import</span> <span class="n">GeoScene</span><span class="p">,</span> <span class="n">LineSegment</span>
+
+<span class="c1"># Create a new scene</span>
+<span class="n">scene</span> <span class="o">=</span> <span class="n">GeoScene</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+
+<span class="c1"># add objects</span>
+<span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">Q</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">points</span><span class="p">([</span><span class="s2">&quot;A&quot;</span><span class="p">,</span><span class="s2">&quot;B&quot;</span><span class="p">,</span><span class="s2">&quot;C&quot;</span><span class="p">,</span><span class="s2">&quot;D&quot;</span><span class="p">,</span> <span class="s2">&quot;E&quot;</span><span class="p">,</span> <span class="s2">&quot;P&quot;</span><span class="p">,</span> <span class="s2">&quot;Q&quot;</span><span class="p">])</span>
+
+<span class="c1"># In the rhombus ABCD</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">rhombus</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">,</span><span class="n">C</span><span class="p">,</span><span class="n">D</span><span class="p">)</span>
+
+<span class="c1"># draw line segment DE perpendicular to CD</span>
+<span class="n">line_DE</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">line_segment</span><span class="p">(</span><span class="n">D</span><span class="p">,</span><span class="n">E</span><span class="p">)</span>
+<span class="n">line_CD</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">line_segment</span><span class="p">(</span><span class="n">C</span><span class="p">,</span><span class="n">D</span><span class="p">)</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">relate</span><span class="o">.</span><span class="n">perpendicular</span><span class="p">(</span><span class="n">line_DE</span><span class="p">,</span> <span class="n">line_CD</span><span class="p">)</span>
+
+<span class="c1">#where E is the point of intersection with diagonal AC</span>
+<span class="n">line_AC</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">line_segment</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">C</span><span class="p">)</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">relate</span><span class="o">.</span><span class="n">point_lies_on</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">line_AC</span><span class="p">)</span>
+
+<span class="c1">#Connect BE</span>
+<span class="n">line_BE</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">line_segment</span><span class="p">(</span><span class="n">B</span><span class="p">,</span><span class="n">E</span><span class="p">)</span>
+
+<span class="c1">#Point P is a moving point on segment BE</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">animate</span><span class="o">.</span><span class="n">point_sweep_line</span><span class="p">(</span><span class="n">point</span> <span class="o">=</span> <span class="n">P</span><span class="p">,</span> <span class="n">start_point</span> <span class="o">=</span> <span class="n">B</span><span class="p">,</span> <span class="n">end_point</span> <span class="o">=</span> <span class="n">E</span><span class="p">)</span>
+
+<span class="c1">#construct the symmetry point P&#39; of point P with respect to line DE</span>
+<span class="n">Ps</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">point</span><span class="p">(</span><span class="s2">&quot;P&#39;&quot;</span><span class="p">,</span> <span class="n">copy</span> <span class="o">=</span> <span class="n">P</span><span class="o">.</span><span class="n">mirror_across_line</span><span class="p">(</span><span class="n">line_DE</span><span class="p">))</span>
+
+<span class="c1">#Point Q is a moving point on diagonal AC, connecting PQ and DQ</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">animate</span><span class="o">.</span><span class="n">point_sweep_line</span><span class="p">(</span><span class="n">point</span> <span class="o">=</span> <span class="n">Q</span><span class="p">,</span> <span class="n">start_point</span> <span class="o">=</span> <span class="n">A</span><span class="p">,</span> <span class="n">end_point</span> <span class="o">=</span> <span class="n">C</span><span class="p">)</span>
+<span class="n">line_PQ</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">line_segment</span><span class="p">(</span><span class="n">P</span><span class="p">,</span><span class="n">Q</span><span class="p">)</span>
+<span class="n">line_DQ</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">line_segment</span><span class="p">(</span><span class="n">D</span><span class="p">,</span><span class="n">Q</span><span class="p">)</span>
+
+<span class="c1"># If AE equals 14 and CE equals 18</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">constraint</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">LineSegment</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">E</span><span class="p">)</span><span class="o">.</span><span class="n">length</span><span class="p">,</span> <span class="mf">1.4</span><span class="p">)</span> <span class="c1"># use small numbers 14 -&gt; 1.4 </span>
+<span class="n">scene</span><span class="o">.</span><span class="n">constraint</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">LineSegment</span><span class="p">(</span><span class="n">C</span><span class="p">,</span><span class="n">E</span><span class="p">)</span><span class="o">.</span><span class="n">length</span><span class="p">,</span> <span class="mf">1.8</span><span class="p">)</span> <span class="c1"># use small numbers 18 -&gt; 1.8 </span>
+
+
+<span class="c1">#run animation</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">animate</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">moving_points</span><span class="o">=</span> <span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">Ps</span><span class="p">,</span> <span class="n">Q</span><span class="p">],</span> <span class="n">opt_method</span> <span class="o">=</span> <span class="s2">&quot;dual_annealing&quot;</span><span class="p">,</span> <span class="n">frames</span> <span class="o">=</span> <span class="mi">32</span><span class="p">)</span> 
+<span class="c1">#when default optimizer fails, use basinhoping -&gt; slower but it works better</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">animate</span><span class="o">.</span><span class="n">gif</span><span class="p">(</span><span class="n">total_time</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> 
+</pre></div>
+</div>
+<p><img alt="image" src="_images/animation.gif" /></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="PyGeoX documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pygeox.html" class="btn btn-neutral float-right" title="Main geometric scene" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Rafael Cabral.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

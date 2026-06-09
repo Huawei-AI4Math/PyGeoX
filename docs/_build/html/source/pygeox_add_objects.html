@@ -1,0 +1,997 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>&lt;no title&gt; &mdash; PyGeoX 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.png"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=938c9ccc"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            PyGeoX
+              <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pygeox.html">Main geometric scene</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pygeox.html#module-pygeox.add_objects">Add geometric objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pygeox.html#module-pygeox.relationship">Add relationships</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pygeox.html#module-pygeox.constraint">Add constraints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pygeox.html#module-pygeox.solver">Solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pygeox.html#basic-objects-point-lines-circles-arcs">Basic Objects (point, lines, circles, arcs)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pygeox.html#module-pygeox.custom_objects">Polygons</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pygeox.html#animation-under-construction">Animation (Under construction)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PyGeoX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">&lt;no title&gt;</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/source/pygeox_add_objects.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <blockquote>
+<div><p>Add objects</p>
+</div></blockquote>
+<hr class="docutils" />
+<p id="module-pygeox.add_objects">Factory namespace for creating and adding geometric objects to a scene.</p>
+<p>This module defines the AddNamespace class, which provides convenient constructors
+to create geometric objects such as points, lines, arcs, polygons, and various
+special polygons (triangles, quadrilaterals, regular polygons, etc.).</p>
+<p>Each method creates the object, registers it in the scene, and adds necessary
+constraints automatically (e.g., equal radii for arcs, collinearity for semicircles).</p>
+<p>The namespace facilitates easy and consistent object creation for geometric problem
+modeling, with support for copying existing objects and symbolic coordinate handling.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pygeox.add_objects.</span></span><span class="sig-name descname"><span class="pre">AddNamespace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scene</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Factory namespace for adding geometric objects to a scene.</p>
+<p>This class exposes convenience constructors that create objects,
+register them in the scene, and add any required constraints.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.acute_triangle">
+<span class="sig-name descname"><span class="pre">acute_triangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.acute_triangle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.acute_triangle" title="Link to this definition"></a></dt>
+<dd><p>Add an acute triangle or return a copy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p1</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex A.</p></li>
+<li><p><strong>p2</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex B.</p></li>
+<li><p><strong>p3</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex C.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optional name.</p></li>
+<li><p><strong>copy</strong> (<a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.AcuteTriangle" title="pygeox.custom_objects.AcuteTriangle"><em>AcuteTriangle</em></a><em> | </em><em>None</em>) – Existing triangle to reuse.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The triangle instance (copy if provided).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.AcuteTriangle" title="pygeox.custom_objects.AcuteTriangle">AcuteTriangle</a></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>All internal angles are constrained &lt; 90°.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.angle">
+<span class="sig-name descname"><span class="pre">angle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vertex</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_sign</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_text</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.angle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.angle" title="Link to this definition"></a></dt>
+<dd><p>Add an angle object defined by three points: A, vertex, and B.</p>
+<p>The angle is formed at the <cite>vertex</cite> point between points <cite>A</cite> and <cite>B</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>A</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>) – One point defining the angle.</p></li>
+<li><p><strong>vertex</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>) – The vertex point where the angle is measured.</p></li>
+<li><p><strong>B</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>) – The other point defining the angle.</p></li>
+<li><p><strong>name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – Name for the angle object.</p></li>
+<li><p><strong>plot_sign</strong> (<em>bool</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>plot_text</strong> (<em>bool</em><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The measure of the angle at <cite>vertex</cite> between points <cite>A</cite> and <cite>B</cite>.
+This is typically a symbolic expression (e.g., a SymPy Expr) if coordinates
+are symbolic or unknown.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.chord">
+<span class="sig-name descname"><span class="pre">chord</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">circle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.chord"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.chord" title="Link to this definition"></a></dt>
+<dd><p>Add a chord between two points on a circle.</p>
+<p>Points <code class="docutils literal notranslate"><span class="pre">A</span></code> and <code class="docutils literal notranslate"><span class="pre">B</span></code> are constrained to lie on <code class="docutils literal notranslate"><span class="pre">circle</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>circle</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Circle" title="pygeox.basic_objects.Circle"><em>Circle</em></a>) – The circle on which the points lie.</p></li>
+<li><p><strong>A</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>) – First point on the circle.</p></li>
+<li><p><strong>B</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>) – Second point on the circle.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optional name. Defaults to <code class="docutils literal notranslate"><span class="pre">chord_A_B_on_&lt;circle&gt;</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The created chord, registered in the scene.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.LineSegment" title="pygeox.basic_objects.LineSegment">LineSegment</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.circle">
+<span class="sig-name descname"><span class="pre">circle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">center</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.circle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.circle" title="Link to this definition"></a></dt>
+<dd><p>Add a circle or copy an existing one.</p>
+<p>If not copying and <code class="docutils literal notranslate"><span class="pre">radius</span></code> is <code class="docutils literal notranslate"><span class="pre">None</span></code>, a <code class="xref py py-class docutils literal notranslate"><span class="pre">sympy.Symbol</span></code>
+is created for the radius using the scene’s radius domain.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>center</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Center point of the circle.</p></li>
+<li><p><strong>radius</strong> (<em>int</em><em> | </em><em>float</em><em> | </em><em>Expr</em><em> | </em><em>None</em>) – Radius value or SymPy expression. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, a symbol is created.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optional name for the circle.</p></li>
+<li><p><strong>copy</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Circle" title="pygeox.basic_objects.Circle"><em>Circle</em></a><em> | </em><em>None</em>) – Existing circle to duplicate.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The created circle, registered in the scene.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Circle" title="pygeox.basic_objects.Circle">Circle</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If not copying and <code class="docutils literal notranslate"><span class="pre">center</span></code> is not provided.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.equilateral_triangle">
+<span class="sig-name descname"><span class="pre">equilateral_triangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.equilateral_triangle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.equilateral_triangle" title="Link to this definition"></a></dt>
+<dd><p>Add an equilateral triangle or return a copy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p1</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex A.</p></li>
+<li><p><strong>p2</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex B.</p></li>
+<li><p><strong>p3</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex C.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optional name.</p></li>
+<li><p><strong>copy</strong> (<a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.EquilateralTriangle" title="pygeox.custom_objects.EquilateralTriangle"><em>EquilateralTriangle</em></a><em> | </em><em>None</em>) – Existing triangle to reuse.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The triangle instance (copy if provided).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.EquilateralTriangle" title="pygeox.custom_objects.EquilateralTriangle">EquilateralTriangle</a></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Three distinct points are required; all sides are constrained equal.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.isosceles_trapezoid">
+<span class="sig-name descname"><span class="pre">isosceles_trapezoid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p4</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_convex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.isosceles_trapezoid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.isosceles_trapezoid" title="Link to this definition"></a></dt>
+<dd><p>Add an isosceles trapezoid or return a copy.</p>
+<p>Constrains AB ∥ CD and BC = DA. Optional convexity enforcement.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p1</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex A.</p></li>
+<li><p><strong>p2</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex B.</p></li>
+<li><p><strong>p3</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex C.</p></li>
+<li><p><strong>p4</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex D.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optional name.</p></li>
+<li><p><strong>force_convex</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, enforces convexity and simplicity.</p></li>
+<li><p><strong>copy</strong> (<a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.IsoscelesTrapezoid" title="pygeox.custom_objects.IsoscelesTrapezoid"><em>IsoscelesTrapezoid</em></a><em> | </em><em>None</em>) – Existing trapezoid to reuse.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The quadrilateral instance (copy if provided).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.IsoscelesTrapezoid" title="pygeox.custom_objects.IsoscelesTrapezoid">IsoscelesTrapezoid</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.isosceles_triangle">
+<span class="sig-name descname"><span class="pre">isosceles_triangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.isosceles_triangle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.isosceles_triangle" title="Link to this definition"></a></dt>
+<dd><p>Add an isosceles triangle or return a copy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p1</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex A.</p></li>
+<li><p><strong>p2</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex B (apex for equal sides AB and BC).</p></li>
+<li><p><strong>p3</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex C.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optional name.</p></li>
+<li><p><strong>copy</strong> (<a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.IsoscelesTriangle" title="pygeox.custom_objects.IsoscelesTriangle"><em>IsoscelesTriangle</em></a><em> | </em><em>None</em>) – Existing triangle to reuse.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The triangle instance (copy if provided).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.IsoscelesTriangle" title="pygeox.custom_objects.IsoscelesTriangle">IsoscelesTriangle</a></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Sides AB and BC are constrained equal (order matters).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.kite">
+<span class="sig-name descname"><span class="pre">kite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p4</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_convex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.kite"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.kite" title="Link to this definition"></a></dt>
+<dd><p>Add a kite or return a copy.</p>
+<p>Constrains AB = BC and CD = DA. Optional convexity enforcement.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p1</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex A.</p></li>
+<li><p><strong>p2</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex B.</p></li>
+<li><p><strong>p3</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex C.</p></li>
+<li><p><strong>p4</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex D.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optional name.</p></li>
+<li><p><strong>force_convex</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, enforces convexity and simplicity.</p></li>
+<li><p><strong>copy</strong> (<a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.Kite" title="pygeox.custom_objects.Kite"><em>Kite</em></a><em> | </em><em>None</em>) – Existing kite to reuse.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The quadrilateral instance (copy if provided).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.Kite" title="pygeox.custom_objects.Kite">Kite</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.line">
+<span class="sig-name descname"><span class="pre">line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.line"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.line" title="Link to this definition"></a></dt>
+<dd><p>Add a line or copy an existing one.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">copy</span></code> is provided and <code class="docutils literal notranslate"><span class="pre">point1</span></code>/<code class="docutils literal notranslate"><span class="pre">point2</span></code> are given,
+their coordinates are overwritten to match the copy. A default name
+is inferred if none is given.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>point1</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – First point on the line.</p></li>
+<li><p><strong>point2</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Second point on the line.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optional name for the line.</p></li>
+<li><p><strong>copy</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Line" title="pygeox.basic_objects.Line"><em>Line</em></a><em> | </em><em>None</em>) – Existing line to duplicate.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The created line, registered in the scene.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Line" title="pygeox.basic_objects.Line">Line</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If not copying and fewer than two points are provided.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.line_segment">
+<span class="sig-name descname"><span class="pre">line_segment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.line_segment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.line_segment" title="Link to this definition"></a></dt>
+<dd><p>Add a line segment or copy an existing one.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>point1</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – First endpoint.</p></li>
+<li><p><strong>point2</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Second endpoint.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optional name for the segment.</p></li>
+<li><p><strong>copy</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.LineSegment" title="pygeox.basic_objects.LineSegment"><em>LineSegment</em></a><em> | </em><em>None</em>) – Existing segment to duplicate.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The created segment, registered in the scene.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.LineSegment" title="pygeox.basic_objects.LineSegment">LineSegment</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If not copying and fewer than two points are provided.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.major_arc">
+<span class="sig-name descname"><span class="pre">major_arc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">center</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_circle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.major_arc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.major_arc" title="Link to this definition"></a></dt>
+<dd><p>Create a <code class="xref py py-class docutils literal notranslate"><span class="pre">MajorArc</span></code> and register it in the scene.</p>
+<p>Adds equal-radius constraints and optionally enforces that the arc
+lies on a given circle (same center and radius).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>center</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>) – Center of the circle.</p></li>
+<li><p><strong>start_point</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>) – Start point of the arc.</p></li>
+<li><p><strong>end_point</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>) – End point of the arc.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optional name. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, one is generated.</p></li>
+<li><p><strong>on_circle</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Circle" title="pygeox.basic_objects.Circle"><em>Circle</em></a><em> | </em><em>None</em>) – If provided, enforces arc radius equals the circle’s radius.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The created arc.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.MajorArc" title="pygeox.basic_objects.MajorArc">MajorArc</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.minor_arc">
+<span class="sig-name descname"><span class="pre">minor_arc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">center</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_circle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.minor_arc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.minor_arc" title="Link to this definition"></a></dt>
+<dd><p>Create a <code class="xref py py-class docutils literal notranslate"><span class="pre">MinorArc</span></code> and register it in the scene.</p>
+<p>Adds equal-radius constraints and optionally enforces that the arc
+lies on a given circle (same center and radius).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>center</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>) – Center of the circle.</p></li>
+<li><p><strong>start_point</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>) – Start point of the arc.</p></li>
+<li><p><strong>end_point</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>) – End point of the arc.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optional name. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, one is generated.</p></li>
+<li><p><strong>on_circle</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Circle" title="pygeox.basic_objects.Circle"><em>Circle</em></a><em> | </em><em>None</em>) – If provided, enforces arc radius equals the circle’s radius.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The created arc.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.MinorArc" title="pygeox.basic_objects.MinorArc">MinorArc</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.obtuse_triangle">
+<span class="sig-name descname"><span class="pre">obtuse_triangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.obtuse_triangle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.obtuse_triangle" title="Link to this definition"></a></dt>
+<dd><p>Add an obtuse triangle or return a copy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p1</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex A.</p></li>
+<li><p><strong>p2</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex B.</p></li>
+<li><p><strong>p3</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex C.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optional name.</p></li>
+<li><p><strong>copy</strong> (<a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.ObtuseTriangle" title="pygeox.custom_objects.ObtuseTriangle"><em>ObtuseTriangle</em></a><em> | </em><em>None</em>) – Existing triangle to reuse.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The triangle instance (copy if provided).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.ObtuseTriangle" title="pygeox.custom_objects.ObtuseTriangle">ObtuseTriangle</a></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>At least one internal angle is constrained &gt; 90°.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.parallelogram">
+<span class="sig-name descname"><span class="pre">parallelogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p4</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_convex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.parallelogram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.parallelogram" title="Link to this definition"></a></dt>
+<dd><p>Add a parallelogram or return a copy.</p>
+<p>Opposite sides are constrained parallel. Optional convexity enforcement.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p1</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex A.</p></li>
+<li><p><strong>p2</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex B.</p></li>
+<li><p><strong>p3</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex C.</p></li>
+<li><p><strong>p4</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex D.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optional name.</p></li>
+<li><p><strong>force_convex</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, enforces convexity and simplicity.</p></li>
+<li><p><strong>copy</strong> (<a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.Parallelogram" title="pygeox.custom_objects.Parallelogram"><em>Parallelogram</em></a><em> | </em><em>None</em>) – Existing parallelogram to reuse.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The quadrilateral instance (copy if provided).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.Parallelogram" title="pygeox.custom_objects.Parallelogram">Parallelogram</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.point">
+<span class="sig-name descname"><span class="pre">point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.point"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.point" title="Link to this definition"></a></dt>
+<dd><p>Add a point or copy an existing one.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">copy</span></code> is provided, its coordinates and name are used unless
+overridden. If <code class="docutils literal notranslate"><span class="pre">x</span></code> or <code class="docutils literal notranslate"><span class="pre">y</span></code> is <code class="docutils literal notranslate"><span class="pre">None</span></code> (and not copying), a
+<code class="xref py py-class docutils literal notranslate"><span class="pre">sympy.Symbol</span></code> is created for that coordinate, using any
+domain set on the scene.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Optional name for the point.</p></li>
+<li><p><strong>x</strong> (<em>int</em><em> | </em><em>float</em><em> | </em><em>Expr</em><em> | </em><em>None</em>) – X coordinate (number or SymPy expression). If <code class="docutils literal notranslate"><span class="pre">None</span></code>, a symbol is created.</p></li>
+<li><p><strong>y</strong> (<em>int</em><em> | </em><em>float</em><em> | </em><em>Expr</em><em> | </em><em>None</em>) – Y coordinate (number or SymPy expression). If <code class="docutils literal notranslate"><span class="pre">None</span></code>, a symbol is created.</p></li>
+<li><p><strong>copy</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Existing point to duplicate.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The created point, registered in the scene.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point">Point</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.points">
+<span class="sig-name descname"><span class="pre">points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">names</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.points" title="Link to this definition"></a></dt>
+<dd><p>Add multiple points by name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>names</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>) – List of point names.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The created points.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point">Point</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.polygon">
+<span class="sig-name descname"><span class="pre">polygon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.polygon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.polygon" title="Link to this definition"></a></dt>
+<dd><p>Add a general polygon or return a copy.</p>
+<p>Assumptions &amp; constraints (when creating):
+at least three points, given in order. If <code class="docutils literal notranslate"><span class="pre">copy</span></code> is provided and the
+number of points matches, provided points are overwritten to match.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*points</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>) – Vertices in order.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optional name.</p></li>
+<li><p><strong>copy</strong> (<a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.Polygon" title="pygeox.custom_objects.Polygon"><em>Polygon</em></a><em> | </em><em>None</em>) – Existing polygon to reuse.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The polygon instance (copy if provided).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.Polygon" title="pygeox.custom_objects.Polygon">Polygon</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.quadrilateral">
+<span class="sig-name descname"><span class="pre">quadrilateral</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p4</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_convex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.quadrilateral"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.quadrilateral" title="Link to this definition"></a></dt>
+<dd><p>Add a quadrilateral or return a copy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p1</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex A.</p></li>
+<li><p><strong>p2</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex B.</p></li>
+<li><p><strong>p3</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex C.</p></li>
+<li><p><strong>p4</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex D.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optional name.</p></li>
+<li><p><strong>force_convex</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, enforces convexity and simplicity.</p></li>
+<li><p><strong>copy</strong> (<a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.Quadrilateral" title="pygeox.custom_objects.Quadrilateral"><em>Quadrilateral</em></a><em> | </em><em>None</em>) – Existing quadrilateral to reuse.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The quadrilateral instance (copy if provided).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.Quadrilateral" title="pygeox.custom_objects.Quadrilateral">Quadrilateral</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.ray">
+<span class="sig-name descname"><span class="pre">ray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_point</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direction_point</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.ray"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.ray" title="Link to this definition"></a></dt>
+<dd><p>Add a ray or copy an existing one.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start_point</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Ray origin.</p></li>
+<li><p><strong>direction_point</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Second point indicating direction.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optional name for the ray.</p></li>
+<li><p><strong>copy</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Ray" title="pygeox.basic_objects.Ray"><em>Ray</em></a><em> | </em><em>None</em>) – Existing ray to duplicate.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The created ray, registered in the scene.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Ray" title="pygeox.basic_objects.Ray">Ray</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If not copying and a start/direction point is missing.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.rectangle">
+<span class="sig-name descname"><span class="pre">rectangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p4</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_convex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.rectangle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.rectangle" title="Link to this definition"></a></dt>
+<dd><p>Add a rectangle or return a copy.</p>
+<p>All angles are constrained 90°; opposite sides parallel. Optional
+convexity enforcement.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p1</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex A.</p></li>
+<li><p><strong>p2</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex B.</p></li>
+<li><p><strong>p3</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex C.</p></li>
+<li><p><strong>p4</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex D.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optional name.</p></li>
+<li><p><strong>force_convex</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, enforces convexity and simplicity.</p></li>
+<li><p><strong>copy</strong> (<a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.Rectangle" title="pygeox.custom_objects.Rectangle"><em>Rectangle</em></a><em> | </em><em>None</em>) – Existing rectangle to reuse.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The quadrilateral instance (copy if provided).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.Rectangle" title="pygeox.custom_objects.Rectangle">Rectangle</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.regular_heptagon">
+<span class="sig-name descname"><span class="pre">regular_heptagon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.regular_heptagon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.regular_heptagon" title="Link to this definition"></a></dt>
+<dd><p>Add a regular heptagon or return a copy.</p>
+<p>Assumptions &amp; constraints: exactly seven ordered points; all sides and
+angles equal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*points</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>) – Seven vertices in order.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optional name.</p></li>
+<li><p><strong>copy</strong> (<a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.RegularHeptagon" title="pygeox.custom_objects.RegularHeptagon"><em>RegularHeptagon</em></a><em> | </em><em>None</em>) – Existing heptagon to reuse.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The polygon instance (copy if provided).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.RegularHeptagon" title="pygeox.custom_objects.RegularHeptagon">RegularHeptagon</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.regular_hexagon">
+<span class="sig-name descname"><span class="pre">regular_hexagon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.regular_hexagon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.regular_hexagon" title="Link to this definition"></a></dt>
+<dd><p>Add a regular hexagon or return a copy.</p>
+<p>Assumptions &amp; constraints: exactly six ordered points; all sides and
+angles equal; inscribed in a circle.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*points</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>) – Six vertices in order.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optional name.</p></li>
+<li><p><strong>copy</strong> (<a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.RegularHexagon" title="pygeox.custom_objects.RegularHexagon"><em>RegularHexagon</em></a><em> | </em><em>None</em>) – Existing hexagon to reuse.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The polygon instance (copy if provided).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.RegularHexagon" title="pygeox.custom_objects.RegularHexagon">RegularHexagon</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.regular_octagon">
+<span class="sig-name descname"><span class="pre">regular_octagon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.regular_octagon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.regular_octagon" title="Link to this definition"></a></dt>
+<dd><p>Add a regular octagon or return a copy.</p>
+<p>Assumptions &amp; constraints: exactly eight ordered points; all sides and
+angles equal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*points</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>) – Eight vertices in order.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optional name.</p></li>
+<li><p><strong>copy</strong> (<a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.RegularOctagon" title="pygeox.custom_objects.RegularOctagon"><em>RegularOctagon</em></a><em> | </em><em>None</em>) – Existing octagon to reuse.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The polygon instance (copy if provided).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.RegularOctagon" title="pygeox.custom_objects.RegularOctagon">RegularOctagon</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.regular_pentagon">
+<span class="sig-name descname"><span class="pre">regular_pentagon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.regular_pentagon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.regular_pentagon" title="Link to this definition"></a></dt>
+<dd><p>Add a regular pentagon or return a copy.</p>
+<p>Assumptions &amp; constraints: exactly five ordered points; all sides and
+angles equal; inscribed in a circle.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*points</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>) – Five vertices in order.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optional name.</p></li>
+<li><p><strong>copy</strong> (<a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.RegularPentagon" title="pygeox.custom_objects.RegularPentagon"><em>RegularPentagon</em></a><em> | </em><em>None</em>) – Existing pentagon to reuse.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The polygon instance (copy if provided).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.RegularPentagon" title="pygeox.custom_objects.RegularPentagon">RegularPentagon</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.regular_polygon">
+<span class="sig-name descname"><span class="pre">regular_polygon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.regular_polygon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.regular_polygon" title="Link to this definition"></a></dt>
+<dd><p>Add a regular polygon or return a copy.</p>
+<p>Assumptions &amp; constraints: at least three ordered points; all sides and
+angles are constrained equal; polygon is inscribed in a circle.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*points</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>) – Vertices in order.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optional name.</p></li>
+<li><p><strong>copy</strong> (<a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.RegularPolygon" title="pygeox.custom_objects.RegularPolygon"><em>RegularPolygon</em></a><em> | </em><em>None</em>) – Existing regular polygon to reuse.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The polygon instance (copy if provided).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.RegularPolygon" title="pygeox.custom_objects.RegularPolygon">RegularPolygon</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.rhomboid">
+<span class="sig-name descname"><span class="pre">rhomboid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p4</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_convex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.rhomboid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.rhomboid" title="Link to this definition"></a></dt>
+<dd><p>Add a rhomboid or return a copy.</p>
+<p>Opposite sides parallel; adjacent sides unequal; no right-angle
+constraint. Optional convexity enforcement.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p1</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex A.</p></li>
+<li><p><strong>p2</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex B.</p></li>
+<li><p><strong>p3</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex C.</p></li>
+<li><p><strong>p4</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex D.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optional name.</p></li>
+<li><p><strong>force_convex</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, enforces convexity and simplicity.</p></li>
+<li><p><strong>copy</strong> (<a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.Rhomboid" title="pygeox.custom_objects.Rhomboid"><em>Rhomboid</em></a><em> | </em><em>None</em>) – Existing rhomboid to reuse.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The quadrilateral instance (copy if provided).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.Rhomboid" title="pygeox.custom_objects.Rhomboid">Rhomboid</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.rhombus">
+<span class="sig-name descname"><span class="pre">rhombus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p4</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_convex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.rhombus"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.rhombus" title="Link to this definition"></a></dt>
+<dd><p>Add a rhombus or return a copy.</p>
+<p>All sides equal; opposite sides parallel; angles not necessarily 90°.
+Optional convexity enforcement.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p1</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex A.</p></li>
+<li><p><strong>p2</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex B.</p></li>
+<li><p><strong>p3</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex C.</p></li>
+<li><p><strong>p4</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex D.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optional name.</p></li>
+<li><p><strong>force_convex</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, enforces convexity and simplicity.</p></li>
+<li><p><strong>copy</strong> (<a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.Rhombus" title="pygeox.custom_objects.Rhombus"><em>Rhombus</em></a><em> | </em><em>None</em>) – Existing rhombus to reuse.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The quadrilateral instance (copy if provided).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.Rhombus" title="pygeox.custom_objects.Rhombus">Rhombus</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.right_isosceles_triangle">
+<span class="sig-name descname"><span class="pre">right_isosceles_triangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.right_isosceles_triangle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.right_isosceles_triangle" title="Link to this definition"></a></dt>
+<dd><p>Add a right isosceles triangle or return a copy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p1</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex A.</p></li>
+<li><p><strong>p2</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex B (right angle at B).</p></li>
+<li><p><strong>p3</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex C.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optional name.</p></li>
+<li><p><strong>copy</strong> (<a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.RightIsoscelesTriangle" title="pygeox.custom_objects.RightIsoscelesTriangle"><em>RightIsoscelesTriangle</em></a><em> | </em><em>None</em>) – Existing triangle to reuse.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The triangle instance (copy if provided).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.RightIsoscelesTriangle" title="pygeox.custom_objects.RightIsoscelesTriangle">RightIsoscelesTriangle</a></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Sides AB and BC are constrained equal (order matters).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.right_trapezoid">
+<span class="sig-name descname"><span class="pre">right_trapezoid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p4</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_convex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.right_trapezoid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.right_trapezoid" title="Link to this definition"></a></dt>
+<dd><p>Add a right trapezoid or return a copy.</p>
+<p>Constrains AB ∥ CD and angles A, D = 90°. Optional convexity enforcement.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p1</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex A.</p></li>
+<li><p><strong>p2</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex B.</p></li>
+<li><p><strong>p3</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex C.</p></li>
+<li><p><strong>p4</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex D.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optional name.</p></li>
+<li><p><strong>force_convex</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, enforces convexity and simplicity.</p></li>
+<li><p><strong>copy</strong> (<a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.RightTrapezoid" title="pygeox.custom_objects.RightTrapezoid"><em>RightTrapezoid</em></a><em> | </em><em>None</em>) – Existing trapezoid to reuse.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The quadrilateral instance (copy if provided).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.RightTrapezoid" title="pygeox.custom_objects.RightTrapezoid">RightTrapezoid</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.right_triangle">
+<span class="sig-name descname"><span class="pre">right_triangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.right_triangle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.right_triangle" title="Link to this definition"></a></dt>
+<dd><p>Add a right triangle or return a copy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p1</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex A.</p></li>
+<li><p><strong>p2</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex B (right angle at B).</p></li>
+<li><p><strong>p3</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex C.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optional name.</p></li>
+<li><p><strong>copy</strong> (<a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.RightTriangle" title="pygeox.custom_objects.RightTriangle"><em>RightTriangle</em></a><em> | </em><em>None</em>) – Existing triangle to reuse.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The triangle instance (copy if provided).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.RightTriangle" title="pygeox.custom_objects.RightTriangle">RightTriangle</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.scalene_triangle">
+<span class="sig-name descname"><span class="pre">scalene_triangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.scalene_triangle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.scalene_triangle" title="Link to this definition"></a></dt>
+<dd><p>Add a scalene triangle or return a copy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p1</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex A.</p></li>
+<li><p><strong>p2</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex B.</p></li>
+<li><p><strong>p3</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex C.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optional name.</p></li>
+<li><p><strong>copy</strong> (<a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.ScaleneTriangle" title="pygeox.custom_objects.ScaleneTriangle"><em>ScaleneTriangle</em></a><em> | </em><em>None</em>) – Existing triangle to reuse.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The triangle instance (copy if provided).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.ScaleneTriangle" title="pygeox.custom_objects.ScaleneTriangle">ScaleneTriangle</a></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>All side lengths are constrained to be distinct.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.semicircle">
+<span class="sig-name descname"><span class="pre">semicircle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">center</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.semicircle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.semicircle" title="Link to this definition"></a></dt>
+<dd><p>Add a semicircle (180° major arc) from A to B with a given center.</p>
+<p>Enforces collinearity of <code class="docutils literal notranslate"><span class="pre">center</span></code>, <code class="docutils literal notranslate"><span class="pre">A</span></code>, and <code class="docutils literal notranslate"><span class="pre">B</span></code> (direction not forced).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>center</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>) – Center of the circle.</p></li>
+<li><p><strong>A</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>) – First endpoint on the circle.</p></li>
+<li><p><strong>B</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>) – Second endpoint on the circle.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optional name. Defaults to <code class="docutils literal notranslate"><span class="pre">semicircle_A_B_center_&lt;center&gt;</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The created semicircle as a major arc.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.MajorArc" title="pygeox.basic_objects.MajorArc">MajorArc</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.square">
+<span class="sig-name descname"><span class="pre">square</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p4</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.square"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.square" title="Link to this definition"></a></dt>
+<dd><p>Add a square or return a copy.</p>
+<p>All sides equal, all angles 90°, opposite sides parallel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p1</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex A.</p></li>
+<li><p><strong>p2</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex B.</p></li>
+<li><p><strong>p3</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex C.</p></li>
+<li><p><strong>p4</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex D.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optional name.</p></li>
+<li><p><strong>copy</strong> (<a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.Square" title="pygeox.custom_objects.Square"><em>Square</em></a><em> | </em><em>None</em>) – Existing square to reuse.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The quadrilateral instance (copy if provided).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.Square" title="pygeox.custom_objects.Square">Square</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.trapezoid">
+<span class="sig-name descname"><span class="pre">trapezoid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p4</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_convex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.trapezoid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.trapezoid" title="Link to this definition"></a></dt>
+<dd><p>Add a trapezoid or return a copy.</p>
+<p>Constrains AB ∥ CD. Optional convexity enforcement.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p1</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex A.</p></li>
+<li><p><strong>p2</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex B.</p></li>
+<li><p><strong>p3</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex C.</p></li>
+<li><p><strong>p4</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex D.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optional name.</p></li>
+<li><p><strong>force_convex</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, enforces convexity and simplicity.</p></li>
+<li><p><strong>copy</strong> (<a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.Trapezoid" title="pygeox.custom_objects.Trapezoid"><em>Trapezoid</em></a><em> | </em><em>None</em>) – Existing trapezoid to reuse.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The quadrilateral instance (copy if provided).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.Trapezoid" title="pygeox.custom_objects.Trapezoid">Trapezoid</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.add_objects.AddNamespace.triangle">
+<span class="sig-name descname"><span class="pre">triangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/add_objects.html#AddNamespace.triangle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.add_objects.AddNamespace.triangle" title="Link to this definition"></a></dt>
+<dd><p>Add a general triangle or return a copy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p1</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex A.</p></li>
+<li><p><strong>p2</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex B.</p></li>
+<li><p><strong>p3</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a><em> | </em><em>None</em>) – Vertex C.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – Optional name.</p></li>
+<li><p><strong>copy</strong> (<a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.Triangle" title="pygeox.custom_objects.Triangle"><em>Triangle</em></a><em> | </em><em>None</em>) – Existing triangle to reuse.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The triangle instance (copy if provided).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pygeox_custom_objects.html#pygeox.custom_objects.Triangle" title="pygeox.custom_objects.Triangle">Triangle</a></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Three distinct points are required when creating.</p>
+</dd></dl>
+
+</dd></dl>
+
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Rafael Cabral.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

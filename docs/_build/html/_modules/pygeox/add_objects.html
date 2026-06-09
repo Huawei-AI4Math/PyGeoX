@@ -1,0 +1,1406 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pygeox.add_objects &mdash; PyGeoX 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../../_static/favicon.png"/>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=938c9ccc"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            PyGeoX
+              <img src="../../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pygeox.html">Main geometric scene</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pygeox.html#module-pygeox.add_objects">Add geometric objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pygeox.html#module-pygeox.relationship">Add relationships</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pygeox.html#module-pygeox.constraint">Add constraints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pygeox.html#module-pygeox.solver">Solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pygeox.html#basic-objects-point-lines-circles-arcs">Basic Objects (point, lines, circles, arcs)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pygeox.html#module-pygeox.custom_objects">Polygons</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pygeox.html#animation-under-construction">Animation (Under construction)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">PyGeoX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pygeox.add_objects</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pygeox.add_objects</h1><div class="highlight"><pre>
+<span></span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Factory namespace for creating and adding geometric objects to a scene.</span>
+
+<span class="sd">This module defines the AddNamespace class, which provides convenient constructors</span>
+<span class="sd">to create geometric objects such as points, lines, arcs, polygons, and various</span>
+<span class="sd">special polygons (triangles, quadrilaterals, regular polygons, etc.).</span>
+
+<span class="sd">Each method creates the object, registers it in the scene, and adds necessary</span>
+<span class="sd">constraints automatically (e.g., equal radii for arcs, collinearity for semicircles).</span>
+
+<span class="sd">The namespace facilitates easy and consistent object creation for geometric problem</span>
+<span class="sd">modeling, with support for copying existing objects and symbolic coordinate handling.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">deprecated</span>
+
+<span class="kn">from</span> <span class="nn">.basic_objects</span> <span class="kn">import</span> <span class="n">Circle</span><span class="p">,</span> <span class="n">Line</span><span class="p">,</span> <span class="n">LineSegment</span><span class="p">,</span> <span class="n">MajorArc</span><span class="p">,</span> <span class="n">MinorArc</span><span class="p">,</span> <span class="n">Point</span><span class="p">,</span> <span class="n">Ray</span><span class="p">,</span> <span class="n">Angle</span>
+<span class="kn">from</span> <span class="nn">.custom_objects</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">Coordinate</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">sympy</span><span class="o">.</span><span class="n">Expr</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="AddNamespace">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace">[docs]</a>
+<span class="nd">@typechecked</span>
+<span class="k">class</span> <span class="nc">AddNamespace</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Factory namespace for adding geometric objects to a scene.</span>
+
+<span class="sd">    This class exposes convenience constructors that create objects,</span>
+<span class="sd">    register them in the scene, and add any required constraints.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scene</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the namespace.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            scene: The owning scene that tracks objects, parameters, and constraints.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span> <span class="o">=</span> <span class="n">scene</span>
+
+    <span class="k">def</span> <span class="nf">_same_coords</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p1</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Point</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Point</span><span class="p">]],</span> <span class="n">p2</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Point</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Point</span><span class="p">]]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Overwrite coordinates of ``p1`` with those of ``p2``.</span>
+
+<span class="sd">        This is a hard replace (no constraints are added to the scene).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            p1: Point or list of points whose coordinates will be overwritten.</span>
+<span class="sd">            p2: Point or list of points providing the coordinates.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">Point</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">p2</span><span class="p">,</span> <span class="n">Point</span><span class="p">):</span>
+            <span class="n">p1</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">p2</span><span class="o">.</span><span class="n">x</span>
+            <span class="n">p1</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">p2</span><span class="o">.</span><span class="n">y</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">p1x</span><span class="p">,</span> <span class="n">p2x</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_same_coords</span><span class="p">(</span><span class="n">p1x</span><span class="p">,</span> <span class="n">p2x</span><span class="p">)</span>
+
+<div class="viewcode-block" id="AddNamespace.point">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.point">[docs]</a>
+    <span class="k">def</span> <span class="nf">point</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">x</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Coordinate</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">y</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Coordinate</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">copy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;Point&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Point&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a point or copy an existing one.</span>
+
+<span class="sd">        If ``copy`` is provided, its coordinates and name are used unless</span>
+<span class="sd">        overridden. If ``x`` or ``y`` is ``None`` (and not copying), a</span>
+<span class="sd">        :class:`sympy.Symbol` is created for that coordinate, using any</span>
+<span class="sd">        domain set on the scene.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name: Optional name for the point.</span>
+<span class="sd">            x: X coordinate (number or SymPy expression). If ``None``, a symbol is created.</span>
+<span class="sd">            y: Y coordinate (number or SymPy expression). If ``None``, a symbol is created.</span>
+<span class="sd">            copy: Existing point to duplicate.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Point: The created point, registered in the scene.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">copy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">copy</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">x</span>
+            <span class="k">if</span> <span class="n">y</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">y</span>
+            <span class="n">point</span> <span class="o">=</span> <span class="n">Point</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">x_domain</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">_domain_consts</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
+            <span class="n">x_sym</span> <span class="o">=</span> <span class="n">sympy</span><span class="o">.</span><span class="n">Symbol</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_x&quot;</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="n">sympy</span><span class="o">.</span><span class="n">Interval</span><span class="p">(</span><span class="o">*</span><span class="n">x_domain</span><span class="p">)</span> <span class="k">if</span> <span class="n">x_domain</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">x</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">constraint</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">x_sym</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+            <span class="n">y_domain</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">_domain_consts</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span>
+            <span class="n">y_sym</span> <span class="o">=</span> <span class="n">sympy</span><span class="o">.</span><span class="n">Symbol</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_y&quot;</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="n">sympy</span><span class="o">.</span><span class="n">Interval</span><span class="p">(</span><span class="o">*</span><span class="n">y_domain</span><span class="p">)</span> <span class="k">if</span> <span class="n">y_domain</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">y</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">constraint</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">y_sym</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+            <span class="n">point</span> <span class="o">=</span> <span class="n">Point</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">x_sym</span><span class="p">,</span> <span class="n">y_sym</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_object</span><span class="p">(</span><span class="s2">&quot;Point&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">point</span><span class="p">)</span>
+
+        <span class="c1"># Add symbolic coordinates to full_parameters set</span>
+        <span class="n">reduced_parameters</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">info</span><span class="p">[</span><span class="s2">&quot;symbol&quot;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;full&quot;</span><span class="p">]</span>
+        <span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">point</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">sympy</span><span class="o">.</span><span class="n">Symbol</span><span class="p">)</span> <span class="ow">and</span> <span class="n">point</span><span class="o">.</span><span class="n">x</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">reduced_parameters</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_parameter</span><span class="p">(</span>
+                <span class="n">symbol</span><span class="o">=</span><span class="n">point</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">full</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">x_domain</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">point</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">sympy</span><span class="o">.</span><span class="n">Symbol</span><span class="p">)</span> <span class="ow">and</span> <span class="n">point</span><span class="o">.</span><span class="n">y</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">reduced_parameters</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_parameter</span><span class="p">(</span>
+                <span class="n">symbol</span><span class="o">=</span><span class="n">point</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">full</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">y_domain</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">point</span></div>
+
+
+<div class="viewcode-block" id="AddNamespace.line">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.line">[docs]</a>
+    <span class="k">def</span> <span class="nf">line</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">point1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">point2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">copy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;Line&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Line&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a line or copy an existing one.</span>
+
+<span class="sd">        If ``copy`` is provided and ``point1``/``point2`` are given,</span>
+<span class="sd">        their coordinates are overwritten to match the copy. A default name</span>
+<span class="sd">        is inferred if none is given.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            point1: First point on the line.</span>
+<span class="sd">            point2: Second point on the line.</span>
+<span class="sd">            name: Optional name for the line.</span>
+<span class="sd">            copy: Existing line to duplicate.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Line: The created line, registered in the scene.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If not copying and fewer than two points are provided.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">copy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">point1</span> <span class="ow">and</span> <span class="n">point2</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_same_coords</span><span class="p">([</span><span class="n">point1</span><span class="p">,</span> <span class="n">point2</span><span class="p">],</span> <span class="p">[</span><span class="n">copy</span><span class="o">.</span><span class="n">point1</span><span class="p">,</span> <span class="n">copy</span><span class="o">.</span><span class="n">point2</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">elif</span> <span class="n">point1</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">point2</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;You must specify two points to define a line.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Line_</span><span class="si">{</span><span class="n">point1</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">point2</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="n">line_obj</span> <span class="o">=</span> <span class="n">Line</span><span class="p">(</span><span class="n">point1</span><span class="p">,</span> <span class="n">point2</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_object</span><span class="p">(</span><span class="s2">&quot;Line&quot;</span><span class="p">,</span> <span class="n">line_obj</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">line_obj</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">line_obj</span></div>
+
+
+<div class="viewcode-block" id="AddNamespace.line_segment">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.line_segment">[docs]</a>
+    <span class="k">def</span> <span class="nf">line_segment</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">point1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">point2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">copy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;LineSegment&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;LineSegment&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a line segment or copy an existing one.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            point1: First endpoint.</span>
+<span class="sd">            point2: Second endpoint.</span>
+<span class="sd">            name: Optional name for the segment.</span>
+<span class="sd">            copy: Existing segment to duplicate.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            LineSegment: The created segment, registered in the scene.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If not copying and fewer than two points are provided.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">copy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">point1</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">point1</span>
+            <span class="n">point2</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">point2</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">elif</span> <span class="n">point1</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">point2</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;You must specify two points to define a line segment.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;LineSegment_</span><span class="si">{</span><span class="n">point1</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">point2</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="n">segment_obj</span> <span class="o">=</span> <span class="n">LineSegment</span><span class="p">(</span><span class="n">point1</span><span class="p">,</span> <span class="n">point2</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_object</span><span class="p">(</span><span class="s2">&quot;LineSegment&quot;</span><span class="p">,</span> <span class="n">segment_obj</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">segment_obj</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">segment_obj</span></div>
+
+
+<div class="viewcode-block" id="AddNamespace.ray">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.ray">[docs]</a>
+    <span class="k">def</span> <span class="nf">ray</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">start_point</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">direction_point</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">copy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;Ray&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Ray&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a ray or copy an existing one.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            start_point: Ray origin.</span>
+<span class="sd">            direction_point: Second point indicating direction.</span>
+<span class="sd">            name: Optional name for the ray.</span>
+<span class="sd">            copy: Existing ray to duplicate.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Ray: The created ray, registered in the scene.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If not copying and a start/direction point is missing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">copy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">start_point</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">start_point</span>
+            <span class="n">direction_point</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">direction_point</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">elif</span> <span class="n">start_point</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">direction_point</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;You must specify a start point and a direction point to define a ray.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Ray_</span><span class="si">{</span><span class="n">start_point</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_to_</span><span class="si">{</span><span class="n">direction_point</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="n">ray_obj</span> <span class="o">=</span> <span class="n">Ray</span><span class="p">(</span><span class="n">start_point</span><span class="p">,</span> <span class="n">direction_point</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_object</span><span class="p">(</span><span class="s2">&quot;Ray&quot;</span><span class="p">,</span> <span class="n">ray_obj</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">ray_obj</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ray_obj</span></div>
+
+
+<div class="viewcode-block" id="AddNamespace.circle">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.circle">[docs]</a>
+    <span class="k">def</span> <span class="nf">circle</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">center</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">radius</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Coordinate</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">copy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;Circle&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Circle&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a circle or copy an existing one.</span>
+
+<span class="sd">        If not copying and ``radius`` is ``None``, a :class:`sympy.Symbol`</span>
+<span class="sd">        is created for the radius using the scene&#39;s radius domain.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            center: Center point of the circle.</span>
+<span class="sd">            radius: Radius value or SymPy expression. If ``None``, a symbol is created.</span>
+<span class="sd">            name: Optional name for the circle.</span>
+<span class="sd">            copy: Existing circle to duplicate.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Circle: The created circle, registered in the scene.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If not copying and ``center`` is not provided.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">r_domain</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">_domain_consts</span><span class="p">[</span><span class="s2">&quot;r&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">copy</span><span class="p">:</span>
+            <span class="n">center</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">center</span>
+            <span class="n">radius</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">radius</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">name</span>
+
+        <span class="k">elif</span> <span class="n">center</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;You must specify a center for the circle.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">copy</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">radius</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">radius</span> <span class="o">=</span> <span class="n">sympy</span><span class="o">.</span><span class="n">Symbol</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">center</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_r&quot;</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="n">sympy</span><span class="o">.</span><span class="n">Interval</span><span class="p">(</span><span class="o">*</span><span class="n">r_domain</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Circle_</span><span class="si">{</span><span class="n">center</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="n">circle</span> <span class="o">=</span> <span class="n">Circle</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_object</span><span class="p">(</span><span class="s2">&quot;Circle&quot;</span><span class="p">,</span> <span class="n">circle</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">circle</span><span class="p">)</span>
+
+        <span class="n">reduced_parameters</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">info</span><span class="p">[</span><span class="s2">&quot;symbol&quot;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;full&quot;</span><span class="p">]</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">circle</span><span class="o">.</span><span class="n">radius</span><span class="p">,</span> <span class="n">sympy</span><span class="o">.</span><span class="n">Symbol</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="n">circle</span><span class="o">.</span><span class="n">radius</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">reduced_parameters</span>
+        <span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_parameter</span><span class="p">(</span>
+                <span class="n">symbol</span><span class="o">=</span><span class="n">circle</span><span class="o">.</span><span class="n">radius</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">full</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">r_domain</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">circle</span></div>
+
+
+<div class="viewcode-block" id="AddNamespace.minor_arc">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.minor_arc">[docs]</a>
+    <span class="k">def</span> <span class="nf">minor_arc</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">center</span><span class="p">:</span> <span class="s2">&quot;Point&quot;</span><span class="p">,</span>
+        <span class="n">start_point</span><span class="p">:</span> <span class="s2">&quot;Point&quot;</span><span class="p">,</span>
+        <span class="n">end_point</span><span class="p">:</span> <span class="s2">&quot;Point&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">on_circle</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Circle</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a :class:`MinorArc` and register it in the scene.</span>
+
+<span class="sd">        Adds equal-radius constraints and optionally enforces that the arc</span>
+<span class="sd">        lies on a given circle (same center and radius).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            center: Center of the circle.</span>
+<span class="sd">            start_point: Start point of the arc.</span>
+<span class="sd">            end_point: End point of the arc.</span>
+<span class="sd">            name: Optional name. If ``None``, one is generated.</span>
+<span class="sd">            on_circle: If provided, enforces arc radius equals the circle&#39;s radius.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            MinorArc: The created arc.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;MinorArc_</span><span class="si">{</span><span class="n">center</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">start_point</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">end_point</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="n">arc</span> <span class="o">=</span> <span class="n">MinorArc</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">start_point</span><span class="p">,</span> <span class="n">end_point</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">line_segment</span><span class="p">(</span><span class="n">copy</span><span class="o">=</span><span class="n">arc</span><span class="o">.</span><span class="n">start_radius_line</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">line_segment</span><span class="p">(</span><span class="n">copy</span><span class="o">=</span><span class="n">arc</span><span class="o">.</span><span class="n">end_radius_line</span><span class="p">)</span>
+        <span class="n">desc</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Equal radii for </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">center</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">start_point</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">center</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">end_point</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">constraint</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span>
+            <span class="n">center</span><span class="o">.</span><span class="n">distance_squared</span><span class="p">(</span><span class="n">start_point</span><span class="p">),</span>
+            <span class="n">center</span><span class="o">.</span><span class="n">distance_squared</span><span class="p">(</span><span class="n">end_point</span><span class="p">),</span>
+            <span class="n">desc</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_object</span><span class="p">(</span><span class="s2">&quot;MinorArc&quot;</span><span class="p">,</span> <span class="n">arc</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">arc</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">on_circle</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">center</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="n">on_circle</span><span class="o">.</span><span class="n">center</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;For arc to belong on circle </span><span class="si">{</span><span class="n">on_circle</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> they must have the same center&quot;</span>
+                <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">constraint</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span>
+                <span class="n">arc</span><span class="o">.</span><span class="n">radius</span><span class="p">,</span> <span class="n">on_circle</span><span class="o">.</span><span class="n">radius</span><span class="p">,</span> <span class="s2">&quot;Arc radius = circle radius&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">arc</span></div>
+
+
+<div class="viewcode-block" id="AddNamespace.major_arc">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.major_arc">[docs]</a>
+    <span class="k">def</span> <span class="nf">major_arc</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">center</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span>
+        <span class="n">start_point</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span>
+        <span class="n">end_point</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">on_circle</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Circle</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a :class:`MajorArc` and register it in the scene.</span>
+
+<span class="sd">        Adds equal-radius constraints and optionally enforces that the arc</span>
+<span class="sd">        lies on a given circle (same center and radius).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            center: Center of the circle.</span>
+<span class="sd">            start_point: Start point of the arc.</span>
+<span class="sd">            end_point: End point of the arc.</span>
+<span class="sd">            name: Optional name. If ``None``, one is generated.</span>
+<span class="sd">            on_circle: If provided, enforces arc radius equals the circle&#39;s radius.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            MajorArc: The created arc.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;MajorArc_</span><span class="si">{</span><span class="n">center</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">start_point</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">end_point</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="n">arc</span> <span class="o">=</span> <span class="n">MajorArc</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">start_point</span><span class="p">,</span> <span class="n">end_point</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">line_segment</span><span class="p">(</span><span class="n">copy</span><span class="o">=</span><span class="n">arc</span><span class="o">.</span><span class="n">start_radius_line</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">line_segment</span><span class="p">(</span><span class="n">copy</span><span class="o">=</span><span class="n">arc</span><span class="o">.</span><span class="n">end_radius_line</span><span class="p">)</span>
+        <span class="n">desc</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Equal radii for </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">center</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">start_point</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">center</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">end_point</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">constraint</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span>
+            <span class="n">center</span><span class="o">.</span><span class="n">distance_squared</span><span class="p">(</span><span class="n">start_point</span><span class="p">),</span>
+            <span class="n">center</span><span class="o">.</span><span class="n">distance_squared</span><span class="p">(</span><span class="n">end_point</span><span class="p">),</span>
+            <span class="n">desc</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_object</span><span class="p">(</span><span class="s2">&quot;MajorArc&quot;</span><span class="p">,</span> <span class="n">arc</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">arc</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">on_circle</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">center</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="n">on_circle</span><span class="o">.</span><span class="n">center</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;For arc to belong on circle </span><span class="si">{</span><span class="n">on_circle</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> they must have the same center&quot;</span>
+                <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">constraint</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span>
+                <span class="n">arc</span><span class="o">.</span><span class="n">radius</span><span class="p">,</span> <span class="n">on_circle</span><span class="o">.</span><span class="n">radius</span><span class="p">,</span> <span class="s2">&quot;Arc radius = circle radius&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">arc</span></div>
+
+
+<div class="viewcode-block" id="AddNamespace.points">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.points">[docs]</a>
+    <span class="k">def</span> <span class="nf">points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Point</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add multiple points by name.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            names: List of point names.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list[Point]: The created points.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">point</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="AddNamespace.polygon">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.polygon">[docs]</a>
+    <span class="k">def</span> <span class="nf">polygon</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">points</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">copy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;Polygon&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Polygon</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a general polygon or return a copy.</span>
+
+<span class="sd">        Assumptions &amp; constraints (when creating):</span>
+<span class="sd">        at least three points, given in order. If ``copy`` is provided and the</span>
+<span class="sd">        number of points matches, provided points are overwritten to match.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            *points: Vertices in order.</span>
+<span class="sd">            name: Optional name.</span>
+<span class="sd">            copy: Existing polygon to reuse.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Polygon: The polygon instance (copy if provided).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">copy</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">points</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_same_coords</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">points</span><span class="p">),</span> <span class="n">copy</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+            <span class="n">copy</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="n">copy</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">return</span> <span class="n">copy</span>
+        <span class="k">return</span> <span class="n">Polygon</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">,</span> <span class="o">*</span><span class="n">points</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AddNamespace.regular_polygon">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.regular_polygon">[docs]</a>
+    <span class="k">def</span> <span class="nf">regular_polygon</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">points</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">copy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;RegularPolygon&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RegularPolygon</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a regular polygon or return a copy.</span>
+
+<span class="sd">        Assumptions &amp; constraints: at least three ordered points; all sides and</span>
+<span class="sd">        angles are constrained equal; polygon is inscribed in a circle.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            *points: Vertices in order.</span>
+<span class="sd">            name: Optional name.</span>
+<span class="sd">            copy: Existing regular polygon to reuse.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            RegularPolygon: The polygon instance (copy if provided).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">copy</span><span class="p">:</span>
+            <span class="n">copy</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="n">copy</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">return</span> <span class="n">copy</span>
+        <span class="k">return</span> <span class="n">RegularPolygon</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">,</span> <span class="o">*</span><span class="n">points</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AddNamespace.regular_pentagon">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.regular_pentagon">[docs]</a>
+    <span class="k">def</span> <span class="nf">regular_pentagon</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">points</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">copy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;RegularPentagon&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RegularPentagon</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a regular pentagon or return a copy.</span>
+
+<span class="sd">        Assumptions &amp; constraints: exactly five ordered points; all sides and</span>
+<span class="sd">        angles equal; inscribed in a circle.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            *points: Five vertices in order.</span>
+<span class="sd">            name: Optional name.</span>
+<span class="sd">            copy: Existing pentagon to reuse.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            RegularPentagon: The polygon instance (copy if provided).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">copy</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_same_coords</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">points</span><span class="p">),</span> <span class="n">copy</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+            <span class="n">copy</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="n">copy</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">return</span> <span class="n">copy</span>
+        <span class="k">return</span> <span class="n">RegularPentagon</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">,</span> <span class="o">*</span><span class="n">points</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AddNamespace.regular_hexagon">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.regular_hexagon">[docs]</a>
+    <span class="k">def</span> <span class="nf">regular_hexagon</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">points</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">copy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;RegularHexagon&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RegularHexagon</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a regular hexagon or return a copy.</span>
+
+<span class="sd">        Assumptions &amp; constraints: exactly six ordered points; all sides and</span>
+<span class="sd">        angles equal; inscribed in a circle.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            *points: Six vertices in order.</span>
+<span class="sd">            name: Optional name.</span>
+<span class="sd">            copy: Existing hexagon to reuse.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            RegularHexagon: The polygon instance (copy if provided).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">copy</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">)</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_same_coords</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">points</span><span class="p">),</span> <span class="n">copy</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+            <span class="n">copy</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="n">copy</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">return</span> <span class="n">copy</span>
+        <span class="k">return</span> <span class="n">RegularHexagon</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">,</span> <span class="o">*</span><span class="n">points</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AddNamespace.regular_heptagon">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.regular_heptagon">[docs]</a>
+    <span class="k">def</span> <span class="nf">regular_heptagon</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">points</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">copy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;RegularHeptagon&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RegularHeptagon</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a regular heptagon or return a copy.</span>
+
+<span class="sd">        Assumptions &amp; constraints: exactly seven ordered points; all sides and</span>
+<span class="sd">        angles equal.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            *points: Seven vertices in order.</span>
+<span class="sd">            name: Optional name.</span>
+<span class="sd">            copy: Existing heptagon to reuse.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            RegularHeptagon: The polygon instance (copy if provided).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">copy</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">)</span> <span class="o">==</span> <span class="mi">7</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_same_coords</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">points</span><span class="p">),</span> <span class="n">copy</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+            <span class="n">copy</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="n">copy</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">return</span> <span class="n">copy</span>
+        <span class="k">return</span> <span class="n">RegularHeptagon</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">,</span> <span class="o">*</span><span class="n">points</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AddNamespace.regular_octagon">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.regular_octagon">[docs]</a>
+    <span class="k">def</span> <span class="nf">regular_octagon</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">points</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">copy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;RegularOctagon&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RegularOctagon</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a regular octagon or return a copy.</span>
+
+<span class="sd">        Assumptions &amp; constraints: exactly eight ordered points; all sides and</span>
+<span class="sd">        angles equal.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            *points: Eight vertices in order.</span>
+<span class="sd">            name: Optional name.</span>
+<span class="sd">            copy: Existing octagon to reuse.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            RegularOctagon: The polygon instance (copy if provided).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">copy</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">)</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_same_coords</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">points</span><span class="p">),</span> <span class="n">copy</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+            <span class="n">copy</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="n">copy</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">return</span> <span class="n">copy</span>
+        <span class="k">return</span> <span class="n">RegularOctagon</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">,</span> <span class="o">*</span><span class="n">points</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AddNamespace.triangle">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.triangle">[docs]</a>
+    <span class="k">def</span> <span class="nf">triangle</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">p1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p3</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">copy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Triangle</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Triangle</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a general triangle or return a copy.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            p1: Vertex A.</span>
+<span class="sd">            p2: Vertex B.</span>
+<span class="sd">            p3: Vertex C.</span>
+<span class="sd">            name: Optional name.</span>
+<span class="sd">            copy: Existing triangle to reuse.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Triangle: The triangle instance (copy if provided).</span>
+
+<span class="sd">        Notes:</span>
+<span class="sd">            Three distinct points are required when creating.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">copy</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">p1</span> <span class="ow">and</span> <span class="n">p2</span> <span class="ow">and</span> <span class="n">p3</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_same_coords</span><span class="p">([</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">],</span> <span class="n">copy</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+            <span class="n">copy</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="n">copy</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">return</span> <span class="n">copy</span>
+
+        <span class="k">return</span> <span class="n">Triangle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AddNamespace.equilateral_triangle">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.equilateral_triangle">[docs]</a>
+    <span class="k">def</span> <span class="nf">equilateral_triangle</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">p1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p3</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">copy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;EquilateralTriangle&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EquilateralTriangle</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add an equilateral triangle or return a copy.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            p1: Vertex A.</span>
+<span class="sd">            p2: Vertex B.</span>
+<span class="sd">            p3: Vertex C.</span>
+<span class="sd">            name: Optional name.</span>
+<span class="sd">            copy: Existing triangle to reuse.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            EquilateralTriangle: The triangle instance (copy if provided).</span>
+
+<span class="sd">        Notes:</span>
+<span class="sd">            Three distinct points are required; all sides are constrained equal.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">copy</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">p1</span> <span class="ow">and</span> <span class="n">p2</span> <span class="ow">and</span> <span class="n">p3</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_same_coords</span><span class="p">([</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">],</span> <span class="n">copy</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+            <span class="n">copy</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="n">copy</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">return</span> <span class="n">copy</span>
+        <span class="k">return</span> <span class="n">EquilateralTriangle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AddNamespace.isosceles_triangle">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.isosceles_triangle">[docs]</a>
+    <span class="k">def</span> <span class="nf">isosceles_triangle</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">p1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p3</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">copy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;IsoscelesTriangle&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IsoscelesTriangle</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add an isosceles triangle or return a copy.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            p1: Vertex A.</span>
+<span class="sd">            p2: Vertex B (apex for equal sides AB and BC).</span>
+<span class="sd">            p3: Vertex C.</span>
+<span class="sd">            name: Optional name.</span>
+<span class="sd">            copy: Existing triangle to reuse.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            IsoscelesTriangle: The triangle instance (copy if provided).</span>
+
+<span class="sd">        Notes:</span>
+<span class="sd">            Sides AB and BC are constrained equal (order matters).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">copy</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">p1</span> <span class="ow">and</span> <span class="n">p2</span> <span class="ow">and</span> <span class="n">p3</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_same_coords</span><span class="p">([</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">],</span> <span class="n">copy</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+            <span class="n">copy</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="n">copy</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">return</span> <span class="n">copy</span>
+        <span class="k">return</span> <span class="n">IsoscelesTriangle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AddNamespace.right_triangle">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.right_triangle">[docs]</a>
+    <span class="k">def</span> <span class="nf">right_triangle</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">p1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p3</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">copy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;RightTriangle&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RightTriangle</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a right triangle or return a copy.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            p1: Vertex A.</span>
+<span class="sd">            p2: Vertex B (right angle at B).</span>
+<span class="sd">            p3: Vertex C.</span>
+<span class="sd">            name: Optional name.</span>
+<span class="sd">            copy: Existing triangle to reuse.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            RightTriangle: The triangle instance (copy if provided).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">copy</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">p1</span> <span class="ow">and</span> <span class="n">p2</span> <span class="ow">and</span> <span class="n">p3</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_same_coords</span><span class="p">([</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">],</span> <span class="n">copy</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+            <span class="n">copy</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="n">copy</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">return</span> <span class="n">copy</span>
+        <span class="k">return</span> <span class="n">RightTriangle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AddNamespace.right_isosceles_triangle">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.right_isosceles_triangle">[docs]</a>
+    <span class="k">def</span> <span class="nf">right_isosceles_triangle</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">p1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p3</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">copy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;RightIsoscelesTriangle&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RightIsoscelesTriangle</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a right isosceles triangle or return a copy.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            p1: Vertex A.</span>
+<span class="sd">            p2: Vertex B (right angle at B).</span>
+<span class="sd">            p3: Vertex C.</span>
+<span class="sd">            name: Optional name.</span>
+<span class="sd">            copy: Existing triangle to reuse.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            RightIsoscelesTriangle: The triangle instance (copy if provided).</span>
+
+<span class="sd">        Notes:</span>
+<span class="sd">            Sides AB and BC are constrained equal (order matters).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">copy</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">p1</span> <span class="ow">and</span> <span class="n">p2</span> <span class="ow">and</span> <span class="n">p3</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_same_coords</span><span class="p">([</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">],</span> <span class="n">copy</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+            <span class="n">copy</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="n">copy</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">return</span> <span class="n">copy</span>
+        <span class="k">return</span> <span class="n">RightIsoscelesTriangle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AddNamespace.obtuse_triangle">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.obtuse_triangle">[docs]</a>
+    <span class="k">def</span> <span class="nf">obtuse_triangle</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">p1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p3</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">copy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;ObtuseTriangle&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ObtuseTriangle</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add an obtuse triangle or return a copy.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            p1: Vertex A.</span>
+<span class="sd">            p2: Vertex B.</span>
+<span class="sd">            p3: Vertex C.</span>
+<span class="sd">            name: Optional name.</span>
+<span class="sd">            copy: Existing triangle to reuse.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ObtuseTriangle: The triangle instance (copy if provided).</span>
+
+<span class="sd">        Notes:</span>
+<span class="sd">            At least one internal angle is constrained &gt; 90°.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">copy</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">p1</span> <span class="ow">and</span> <span class="n">p2</span> <span class="ow">and</span> <span class="n">p3</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_same_coords</span><span class="p">([</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">],</span> <span class="n">copy</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+            <span class="n">copy</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="n">copy</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">return</span> <span class="n">copy</span>
+        <span class="k">return</span> <span class="n">ObtuseTriangle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AddNamespace.acute_triangle">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.acute_triangle">[docs]</a>
+    <span class="k">def</span> <span class="nf">acute_triangle</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">p1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p3</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">copy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;AcuteTriangle&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AcuteTriangle</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add an acute triangle or return a copy.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            p1: Vertex A.</span>
+<span class="sd">            p2: Vertex B.</span>
+<span class="sd">            p3: Vertex C.</span>
+<span class="sd">            name: Optional name.</span>
+<span class="sd">            copy: Existing triangle to reuse.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            AcuteTriangle: The triangle instance (copy if provided).</span>
+
+<span class="sd">        Notes:</span>
+<span class="sd">            All internal angles are constrained &lt; 90°.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">copy</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">p1</span> <span class="ow">and</span> <span class="n">p2</span> <span class="ow">and</span> <span class="n">p3</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_same_coords</span><span class="p">([</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">],</span> <span class="n">copy</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+            <span class="n">copy</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="n">copy</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">return</span> <span class="n">copy</span>
+        <span class="k">return</span> <span class="n">AcuteTriangle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AddNamespace.scalene_triangle">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.scalene_triangle">[docs]</a>
+    <span class="k">def</span> <span class="nf">scalene_triangle</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">p1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p3</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">copy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;ScaleneTriangle&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ScaleneTriangle</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a scalene triangle or return a copy.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            p1: Vertex A.</span>
+<span class="sd">            p2: Vertex B.</span>
+<span class="sd">            p3: Vertex C.</span>
+<span class="sd">            name: Optional name.</span>
+<span class="sd">            copy: Existing triangle to reuse.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ScaleneTriangle: The triangle instance (copy if provided).</span>
+
+<span class="sd">        Notes:</span>
+<span class="sd">            All side lengths are constrained to be distinct.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">copy</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">p1</span> <span class="ow">and</span> <span class="n">p2</span> <span class="ow">and</span> <span class="n">p3</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_same_coords</span><span class="p">([</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">],</span> <span class="n">copy</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+            <span class="n">copy</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="n">copy</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">return</span> <span class="n">copy</span>
+        <span class="k">return</span> <span class="n">ScaleneTriangle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AddNamespace.quadrilateral">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.quadrilateral">[docs]</a>
+    <span class="k">def</span> <span class="nf">quadrilateral</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">p1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p3</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p4</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">force_convex</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">copy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;Quadrilateral&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Quadrilateral</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a quadrilateral or return a copy.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            p1: Vertex A.</span>
+<span class="sd">            p2: Vertex B.</span>
+<span class="sd">            p3: Vertex C.</span>
+<span class="sd">            p4: Vertex D.</span>
+<span class="sd">            name: Optional name.</span>
+<span class="sd">            force_convex: If ``True``, enforces convexity and simplicity.</span>
+<span class="sd">            copy: Existing quadrilateral to reuse.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Quadrilateral: The quadrilateral instance (copy if provided).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">copy</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">p1</span> <span class="ow">and</span> <span class="n">p2</span> <span class="ow">and</span> <span class="n">p3</span> <span class="ow">and</span> <span class="n">p4</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_same_coords</span><span class="p">([</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">p4</span><span class="p">],</span> <span class="n">copy</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+            <span class="n">copy</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="n">copy</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">return</span> <span class="n">copy</span>
+        <span class="k">return</span> <span class="n">Quadrilateral</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">p4</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">force_convex</span><span class="o">=</span><span class="n">force_convex</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AddNamespace.parallelogram">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.parallelogram">[docs]</a>
+    <span class="k">def</span> <span class="nf">parallelogram</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">p1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p3</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p4</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">force_convex</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">copy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;Parallelogram&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Parallelogram</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a parallelogram or return a copy.</span>
+
+<span class="sd">        Opposite sides are constrained parallel. Optional convexity enforcement.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            p1: Vertex A.</span>
+<span class="sd">            p2: Vertex B.</span>
+<span class="sd">            p3: Vertex C.</span>
+<span class="sd">            p4: Vertex D.</span>
+<span class="sd">            name: Optional name.</span>
+<span class="sd">            force_convex: If ``True``, enforces convexity and simplicity.</span>
+<span class="sd">            copy: Existing parallelogram to reuse.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Parallelogram: The quadrilateral instance (copy if provided).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">copy</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">p1</span> <span class="ow">and</span> <span class="n">p2</span> <span class="ow">and</span> <span class="n">p3</span> <span class="ow">and</span> <span class="n">p4</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_same_coords</span><span class="p">([</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">p4</span><span class="p">],</span> <span class="n">copy</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+            <span class="n">copy</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="n">copy</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">return</span> <span class="n">copy</span>
+        <span class="k">return</span> <span class="n">Parallelogram</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">p4</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">force_convex</span><span class="o">=</span><span class="n">force_convex</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AddNamespace.rectangle">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.rectangle">[docs]</a>
+    <span class="k">def</span> <span class="nf">rectangle</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">p1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p3</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p4</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">force_convex</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">copy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;Rectangle&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Rectangle</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a rectangle or return a copy.</span>
+
+<span class="sd">        All angles are constrained 90°; opposite sides parallel. Optional</span>
+<span class="sd">        convexity enforcement.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            p1: Vertex A.</span>
+<span class="sd">            p2: Vertex B.</span>
+<span class="sd">            p3: Vertex C.</span>
+<span class="sd">            p4: Vertex D.</span>
+<span class="sd">            name: Optional name.</span>
+<span class="sd">            force_convex: If ``True``, enforces convexity and simplicity.</span>
+<span class="sd">            copy: Existing rectangle to reuse.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Rectangle: The quadrilateral instance (copy if provided).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">copy</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">p1</span> <span class="ow">and</span> <span class="n">p2</span> <span class="ow">and</span> <span class="n">p3</span> <span class="ow">and</span> <span class="n">p4</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_same_coords</span><span class="p">([</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">p4</span><span class="p">],</span> <span class="n">copy</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+            <span class="n">copy</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="n">copy</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">return</span> <span class="n">copy</span>
+        <span class="k">return</span> <span class="n">Rectangle</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">p4</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">force_convex</span><span class="o">=</span><span class="n">force_convex</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AddNamespace.square">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.square">[docs]</a>
+    <span class="k">def</span> <span class="nf">square</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">p1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p3</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p4</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">copy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;Square&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Square</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a square or return a copy.</span>
+
+<span class="sd">        All sides equal, all angles 90°, opposite sides parallel.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            p1: Vertex A.</span>
+<span class="sd">            p2: Vertex B.</span>
+<span class="sd">            p3: Vertex C.</span>
+<span class="sd">            p4: Vertex D.</span>
+<span class="sd">            name: Optional name.</span>
+<span class="sd">            copy: Existing square to reuse.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Square: The quadrilateral instance (copy if provided).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">copy</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">p1</span> <span class="ow">and</span> <span class="n">p2</span> <span class="ow">and</span> <span class="n">p3</span> <span class="ow">and</span> <span class="n">p4</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_same_coords</span><span class="p">([</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">p4</span><span class="p">],</span> <span class="n">copy</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+            <span class="n">copy</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="n">copy</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">return</span> <span class="n">copy</span>
+        <span class="k">return</span> <span class="n">Square</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">p4</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AddNamespace.rhombus">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.rhombus">[docs]</a>
+    <span class="k">def</span> <span class="nf">rhombus</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">p1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p3</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p4</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">force_convex</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">copy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;Rhombus&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Rhombus</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a rhombus or return a copy.</span>
+
+<span class="sd">        All sides equal; opposite sides parallel; angles not necessarily 90°.</span>
+<span class="sd">        Optional convexity enforcement.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            p1: Vertex A.</span>
+<span class="sd">            p2: Vertex B.</span>
+<span class="sd">            p3: Vertex C.</span>
+<span class="sd">            p4: Vertex D.</span>
+<span class="sd">            name: Optional name.</span>
+<span class="sd">            force_convex: If ``True``, enforces convexity and simplicity.</span>
+<span class="sd">            copy: Existing rhombus to reuse.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Rhombus: The quadrilateral instance (copy if provided).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">copy</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">p1</span> <span class="ow">and</span> <span class="n">p2</span> <span class="ow">and</span> <span class="n">p3</span> <span class="ow">and</span> <span class="n">p4</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_same_coords</span><span class="p">([</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">p4</span><span class="p">],</span> <span class="n">copy</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+            <span class="n">copy</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="n">copy</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">return</span> <span class="n">copy</span>
+        <span class="k">return</span> <span class="n">Rhombus</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">p4</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">force_convex</span><span class="o">=</span><span class="n">force_convex</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AddNamespace.trapezoid">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.trapezoid">[docs]</a>
+    <span class="k">def</span> <span class="nf">trapezoid</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">p1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p3</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p4</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">force_convex</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">copy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;Trapezoid&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Trapezoid</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a trapezoid or return a copy.</span>
+
+<span class="sd">        Constrains AB ∥ CD. Optional convexity enforcement.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            p1: Vertex A.</span>
+<span class="sd">            p2: Vertex B.</span>
+<span class="sd">            p3: Vertex C.</span>
+<span class="sd">            p4: Vertex D.</span>
+<span class="sd">            name: Optional name.</span>
+<span class="sd">            force_convex: If ``True``, enforces convexity and simplicity.</span>
+<span class="sd">            copy: Existing trapezoid to reuse.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Trapezoid: The quadrilateral instance (copy if provided).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">copy</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">p1</span> <span class="ow">and</span> <span class="n">p2</span> <span class="ow">and</span> <span class="n">p3</span> <span class="ow">and</span> <span class="n">p4</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_same_coords</span><span class="p">([</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">p4</span><span class="p">],</span> <span class="n">copy</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+            <span class="n">copy</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="n">copy</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">return</span> <span class="n">copy</span>
+        <span class="k">return</span> <span class="n">Trapezoid</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">p4</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">force_convex</span><span class="o">=</span><span class="n">force_convex</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AddNamespace.isosceles_trapezoid">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.isosceles_trapezoid">[docs]</a>
+    <span class="k">def</span> <span class="nf">isosceles_trapezoid</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">p1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p3</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p4</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">force_convex</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">copy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;IsoscelesTrapezoid&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IsoscelesTrapezoid</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add an isosceles trapezoid or return a copy.</span>
+
+<span class="sd">        Constrains AB ∥ CD and BC = DA. Optional convexity enforcement.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            p1: Vertex A.</span>
+<span class="sd">            p2: Vertex B.</span>
+<span class="sd">            p3: Vertex C.</span>
+<span class="sd">            p4: Vertex D.</span>
+<span class="sd">            name: Optional name.</span>
+<span class="sd">            force_convex: If ``True``, enforces convexity and simplicity.</span>
+<span class="sd">            copy: Existing trapezoid to reuse.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            IsoscelesTrapezoid: The quadrilateral instance (copy if provided).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">copy</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">p1</span> <span class="ow">and</span> <span class="n">p2</span> <span class="ow">and</span> <span class="n">p3</span> <span class="ow">and</span> <span class="n">p4</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_same_coords</span><span class="p">([</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">p4</span><span class="p">],</span> <span class="n">copy</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+            <span class="n">copy</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="n">copy</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">return</span> <span class="n">copy</span>
+        <span class="k">return</span> <span class="n">IsoscelesTrapezoid</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">p4</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">force_convex</span><span class="o">=</span><span class="n">force_convex</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AddNamespace.right_trapezoid">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.right_trapezoid">[docs]</a>
+    <span class="k">def</span> <span class="nf">right_trapezoid</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">p1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p3</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p4</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">force_convex</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">copy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;RightTrapezoid&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RightTrapezoid</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a right trapezoid or return a copy.</span>
+
+<span class="sd">        Constrains AB ∥ CD and angles A, D = 90°. Optional convexity enforcement.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            p1: Vertex A.</span>
+<span class="sd">            p2: Vertex B.</span>
+<span class="sd">            p3: Vertex C.</span>
+<span class="sd">            p4: Vertex D.</span>
+<span class="sd">            name: Optional name.</span>
+<span class="sd">            force_convex: If ``True``, enforces convexity and simplicity.</span>
+<span class="sd">            copy: Existing trapezoid to reuse.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            RightTrapezoid: The quadrilateral instance (copy if provided).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">copy</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">p1</span> <span class="ow">and</span> <span class="n">p2</span> <span class="ow">and</span> <span class="n">p3</span> <span class="ow">and</span> <span class="n">p4</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_same_coords</span><span class="p">([</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">p4</span><span class="p">],</span> <span class="n">copy</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+            <span class="n">copy</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="n">copy</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">return</span> <span class="n">copy</span>
+        <span class="k">return</span> <span class="n">RightTrapezoid</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">p4</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">force_convex</span><span class="o">=</span><span class="n">force_convex</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AddNamespace.kite">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.kite">[docs]</a>
+    <span class="k">def</span> <span class="nf">kite</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">p1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p3</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p4</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">force_convex</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">copy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;Kite&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Kite</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a kite or return a copy.</span>
+
+<span class="sd">        Constrains AB = BC and CD = DA. Optional convexity enforcement.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            p1: Vertex A.</span>
+<span class="sd">            p2: Vertex B.</span>
+<span class="sd">            p3: Vertex C.</span>
+<span class="sd">            p4: Vertex D.</span>
+<span class="sd">            name: Optional name.</span>
+<span class="sd">            force_convex: If ``True``, enforces convexity and simplicity.</span>
+<span class="sd">            copy: Existing kite to reuse.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Kite: The quadrilateral instance (copy if provided).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">copy</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">p1</span> <span class="ow">and</span> <span class="n">p2</span> <span class="ow">and</span> <span class="n">p3</span> <span class="ow">and</span> <span class="n">p4</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_same_coords</span><span class="p">([</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">p4</span><span class="p">],</span> <span class="n">copy</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+            <span class="n">copy</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="n">copy</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">return</span> <span class="n">copy</span>
+        <span class="k">return</span> <span class="n">Kite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">p4</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">force_convex</span><span class="o">=</span><span class="n">force_convex</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AddNamespace.rhomboid">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.rhomboid">[docs]</a>
+    <span class="k">def</span> <span class="nf">rhomboid</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">p1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p3</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">p4</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">force_convex</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">copy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;Rhomboid&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Rhomboid</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a rhomboid or return a copy.</span>
+
+<span class="sd">        Opposite sides parallel; adjacent sides unequal; no right-angle</span>
+<span class="sd">        constraint. Optional convexity enforcement.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            p1: Vertex A.</span>
+<span class="sd">            p2: Vertex B.</span>
+<span class="sd">            p3: Vertex C.</span>
+<span class="sd">            p4: Vertex D.</span>
+<span class="sd">            name: Optional name.</span>
+<span class="sd">            force_convex: If ``True``, enforces convexity and simplicity.</span>
+<span class="sd">            copy: Existing rhomboid to reuse.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Rhomboid: The quadrilateral instance (copy if provided).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">copy</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">p1</span> <span class="ow">and</span> <span class="n">p2</span> <span class="ow">and</span> <span class="n">p3</span> <span class="ow">and</span> <span class="n">p4</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_same_coords</span><span class="p">([</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">p4</span><span class="p">],</span> <span class="n">copy</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+            <span class="n">copy</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="n">copy</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">return</span> <span class="n">copy</span>
+        <span class="k">return</span> <span class="n">Rhomboid</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">p4</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">force_convex</span><span class="o">=</span><span class="n">force_convex</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AddNamespace.chord">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.chord">[docs]</a>
+    <span class="nd">@deprecated</span><span class="p">(</span><span class="s2">&quot;Instead of using this function, you should create a line segment and then use scene.relate.is_chord()&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">chord</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">circle</span><span class="p">:</span> <span class="n">Circle</span><span class="p">,</span> <span class="n">A</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LineSegment</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a chord between two points on a circle.</span>
+
+<span class="sd">        Points ``A`` and ``B`` are constrained to lie on ``circle``.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            circle: The circle on which the points lie.</span>
+<span class="sd">            A: First point on the circle.</span>
+<span class="sd">            B: Second point on the circle.</span>
+<span class="sd">            name: Optional name. Defaults to ``chord_A_B_on_&lt;circle&gt;``.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            LineSegment: The created chord, registered in the scene.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;chord_</span><span class="si">{</span><span class="n">A</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">B</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_on_</span><span class="si">{</span><span class="n">circle</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">chord_line</span> <span class="o">=</span> <span class="n">LineSegment</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_object</span><span class="p">(</span><span class="s2">&quot;Line&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">chord_line</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">relate</span><span class="o">.</span><span class="n">point_lies_on</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">circle</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">relate</span><span class="o">.</span><span class="n">point_lies_on</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">circle</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">chord_line</span></div>
+
+
+<div class="viewcode-block" id="AddNamespace.semicircle">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.semicircle">[docs]</a>
+    <span class="k">def</span> <span class="nf">semicircle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">center</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span> <span class="n">A</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a semicircle (180° major arc) from A to B with a given center.</span>
+
+<span class="sd">        Enforces collinearity of ``center``, ``A``, and ``B`` (direction not forced).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            center: Center of the circle.</span>
+<span class="sd">            A: First endpoint on the circle.</span>
+<span class="sd">            B: Second endpoint on the circle.</span>
+<span class="sd">            name: Optional name. Defaults to ``semicircle_A_B_center_&lt;center&gt;``.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            MajorArc: The created semicircle as a major arc.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;semicircle_</span><span class="si">{</span><span class="n">A</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">B</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_center_</span><span class="si">{</span><span class="n">center</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">arc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">major_arc</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">relate</span><span class="o">.</span><span class="n">collinear</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">force_direction</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">arc</span></div>
+
+        <span class="c1"># self.scene.constraint.eq(arc.central_angle, 180, f&quot;Semicircle: arc {arc.name} = 180°&quot;)</span>
+
+<div class="viewcode-block" id="AddNamespace.angle">
+<a class="viewcode-back" href="../../source/pygeox_add_objects.html#pygeox.add_objects.AddNamespace.angle">[docs]</a>
+    <span class="k">def</span> <span class="nf">angle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span> <span class="n">vertex</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span><span class="n">Point</span><span class="p">,</span> <span class="n">plot_sign</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">plot_text</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add an angle object defined by three points: A, vertex, and B.</span>
+
+<span class="sd">        The angle is formed at the `vertex` point between points `A` and `B`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            A (Point): One point defining the angle.</span>
+<span class="sd">            vertex (Point): The vertex point where the angle is measured.</span>
+<span class="sd">            B (Point): The other point defining the angle.</span>
+<span class="sd">            name (Optional[str], optional): Name for the angle object.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The measure of the angle at `vertex` between points `A` and `B`.</span>
+<span class="sd">            This is typically a symbolic expression (e.g., a SymPy Expr) if coordinates</span>
+<span class="sd">            are symbolic or unknown.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;angle_</span><span class="si">{</span><span class="n">A</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">vertex</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">B</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="n">angle</span> <span class="o">=</span> <span class="n">Angle</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">vertex</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">plot_sign</span><span class="p">,</span> <span class="n">plot_text</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_object</span><span class="p">(</span><span class="s2">&quot;Angle&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">angle</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">angle</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Rafael Cabral.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

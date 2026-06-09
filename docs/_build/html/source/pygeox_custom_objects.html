@@ -1,0 +1,990 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>&lt;no title&gt; &mdash; PyGeoX 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.png"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=938c9ccc"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            PyGeoX
+              <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pygeox.html">Main geometric scene</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pygeox.html#module-pygeox.add_objects">Add geometric objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pygeox.html#module-pygeox.relationship">Add relationships</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pygeox.html#module-pygeox.constraint">Add constraints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pygeox.html#module-pygeox.solver">Solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pygeox.html#basic-objects-point-lines-circles-arcs">Basic Objects (point, lines, circles, arcs)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pygeox.html#module-pygeox.custom_objects">Polygons</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pygeox.html#animation-under-construction">Animation (Under construction)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PyGeoX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">&lt;no title&gt;</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/source/pygeox_custom_objects.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <blockquote>
+<div><p>Polygons</p>
+</div></blockquote>
+<hr class="docutils" />
+<p id="module-pygeox.custom_objects">custom_objects.py: Classes for polygons and specialized geometric shapes within a geometric scene.</p>
+<p>Defines general Polygon and its subclasses including CyclicPolygon, RegularPolygon,
+and various specific polygons like Triangles, Quadrilaterals, and their special cases
+(e.g., EquilateralTriangle, Rectangle, Square).</p>
+<p>These classes encapsulate geometric properties, constraints, and relationships,
+enabling symbolic geometry modeling, constraint solving, and scene management.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="pygeox.custom_objects.AcuteTriangle">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pygeox.custom_objects.</span></span><span class="sig-name descname"><span class="pre">AcuteTriangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geoscene</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_to_scene_as_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'AcuteTriangle'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/custom_objects.html#AcuteTriangle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.custom_objects.AcuteTriangle" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pygeox.custom_objects.Triangle" title="pygeox.custom_objects.Triangle"><code class="xref py py-class docutils literal notranslate"><span class="pre">Triangle</span></code></a></p>
+<p>Triangle with all angles &lt; 90 degrees.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p1</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>p2</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>p3</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>add_to_scene_as_type</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pygeox.custom_objects.CyclicPolygon">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pygeox.custom_objects.</span></span><span class="sig-name descname"><span class="pre">CyclicPolygon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geoscene</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_to_scene_as_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CyclicPolygon'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/custom_objects.html#CyclicPolygon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.custom_objects.CyclicPolygon" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pygeox.custom_objects.Polygon" title="pygeox.custom_objects.Polygon"><code class="xref py py-class docutils literal notranslate"><span class="pre">Polygon</span></code></a></p>
+<p>Polygon whose vertices all lie on a single circle (circumcircle).
+Circumcenter and circumradius are always defined.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>points</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>add_to_scene_as_type</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.CyclicPolygon.circumcenter">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">circumcenter</span></span><a class="headerlink" href="#pygeox.custom_objects.CyclicPolygon.circumcenter" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.CyclicPolygon.circumradius">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">circumradius</span></span><a class="headerlink" href="#pygeox.custom_objects.CyclicPolygon.circumradius" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pygeox.custom_objects.EquilateralTriangle">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pygeox.custom_objects.</span></span><span class="sig-name descname"><span class="pre">EquilateralTriangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geoscene</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_to_scene_as_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'EquilateralTriangle'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/custom_objects.html#EquilateralTriangle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.custom_objects.EquilateralTriangle" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pygeox.custom_objects.Triangle" title="pygeox.custom_objects.Triangle"><code class="xref py py-class docutils literal notranslate"><span class="pre">Triangle</span></code></a></p>
+<p>Triangle with all sides equal and all angles 60 degrees.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p1</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>p2</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>p3</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>add_to_scene_as_type</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.EquilateralTriangle.circumradius">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">circumradius</span></span><a class="headerlink" href="#pygeox.custom_objects.EquilateralTriangle.circumradius" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.EquilateralTriangle.inradius">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inradius</span></span><a class="headerlink" href="#pygeox.custom_objects.EquilateralTriangle.inradius" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pygeox.custom_objects.IsoscelesTrapezoid">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pygeox.custom_objects.</span></span><span class="sig-name descname"><span class="pre">IsoscelesTrapezoid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geoscene</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_to_scene_as_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'IsoscelesTrapezoid'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_convex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/custom_objects.html#IsoscelesTrapezoid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.custom_objects.IsoscelesTrapezoid" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pygeox.custom_objects.Trapezoid" title="pygeox.custom_objects.Trapezoid"><code class="xref py py-class docutils literal notranslate"><span class="pre">Trapezoid</span></code></a></p>
+<p>Trapezoid with non-parallel sides equal in length. IsoscelesTrapezoid(A,B,C,D) means AB is parallel to CD and BC and DA have same lenght.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>force_convex</strong> (<em>bool</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pygeox.custom_objects.IsoscelesTriangle">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pygeox.custom_objects.</span></span><span class="sig-name descname"><span class="pre">IsoscelesTriangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geoscene</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_to_scene_as_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'IsoscelesTriangle'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/custom_objects.html#IsoscelesTriangle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.custom_objects.IsoscelesTriangle" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pygeox.custom_objects.Triangle" title="pygeox.custom_objects.Triangle"><code class="xref py py-class docutils literal notranslate"><span class="pre">Triangle</span></code></a></p>
+<p>Triangle with at least two equal sides. IsoscelesTriangle(A,B,C) means that AB=BC.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p1</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>p2</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>p3</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>add_to_scene_as_type</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Kite">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pygeox.custom_objects.</span></span><span class="sig-name descname"><span class="pre">Kite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geoscene</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_to_scene_as_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Kite'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_convex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/custom_objects.html#Kite"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.custom_objects.Kite" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pygeox.custom_objects.Quadrilateral" title="pygeox.custom_objects.Quadrilateral"><code class="xref py py-class docutils literal notranslate"><span class="pre">Quadrilateral</span></code></a></p>
+<p>Quadrilateral with two distinct pairs of adjacent sides equal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>force_convex</strong> (<em>bool</em>)</p>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Kite.area">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">area</span></span><a class="headerlink" href="#pygeox.custom_objects.Kite.area" title="Link to this definition"></a></dt>
+<dd><p>Calculates the area of the polygon using the shoelace formula.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The area. Units: square of input coordinates.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>sympy.Expr</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pygeox.custom_objects.ObtuseTriangle">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pygeox.custom_objects.</span></span><span class="sig-name descname"><span class="pre">ObtuseTriangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geoscene</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_to_scene_as_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ObtuseTriangle'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/custom_objects.html#ObtuseTriangle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.custom_objects.ObtuseTriangle" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pygeox.custom_objects.Triangle" title="pygeox.custom_objects.Triangle"><code class="xref py py-class docutils literal notranslate"><span class="pre">Triangle</span></code></a></p>
+<p>Triangle with one angle &gt; 90 degrees.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p1</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>p2</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>p3</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>add_to_scene_as_type</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Parallelogram">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pygeox.custom_objects.</span></span><span class="sig-name descname"><span class="pre">Parallelogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geoscene</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_to_scene_as_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Parallelogram'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_convex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/custom_objects.html#Parallelogram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.custom_objects.Parallelogram" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pygeox.custom_objects.Quadrilateral" title="pygeox.custom_objects.Quadrilateral"><code class="xref py py-class docutils literal notranslate"><span class="pre">Quadrilateral</span></code></a></p>
+<p>Quadrilateral with both pairs of opposite sides parallel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>force_convex</strong> (<em>bool</em>)</p>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Parallelogram.area">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">area</span></span><a class="headerlink" href="#pygeox.custom_objects.Parallelogram.area" title="Link to this definition"></a></dt>
+<dd><p>Calculates the area of the polygon using the shoelace formula.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The area. Units: square of input coordinates.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>sympy.Expr</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Polygon">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pygeox.custom_objects.</span></span><span class="sig-name descname"><span class="pre">Polygon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geoscene</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_to_scene_as_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Polygon'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_convex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/custom_objects.html#Polygon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.custom_objects.Polygon" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Represents a general polygon defined by an ordered list of Point objects.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>geoscene</strong> – The geometric scene/context to which this polygon belongs.</p></li>
+<li><p><strong>*points</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>) – The vertices of the polygon, in order.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – Name for the polygon. If None, an automatic name is generated.</p></li>
+<li><p><strong>add_to_scene_as_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Type string for scene registration. Default is ‘Polygon’.</p></li>
+<li><p><strong>force_convex</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, enforces convexity and simplicity constraint (forcing also counterclockwise direction).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new Polygon object registered in the scene.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pygeox.custom_objects.Polygon" title="pygeox.custom_objects.Polygon">Polygon</a></p>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Polygon.area">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">area</span></span><a class="headerlink" href="#pygeox.custom_objects.Polygon.area" title="Link to this definition"></a></dt>
+<dd><p>Calculates the area of the polygon using the shoelace formula.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The area. Units: square of input coordinates.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>sympy.Expr</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Polygon.centroid">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">centroid</span></span><a class="headerlink" href="#pygeox.custom_objects.Polygon.centroid" title="Link to this definition"></a></dt>
+<dd><p>Returns the vertex centroid (average of all vertices).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The centroid as a Point object.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point">Point</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Polygon.circumcircle">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">circumcircle</span></span><a class="headerlink" href="#pygeox.custom_objects.Polygon.circumcircle" title="Link to this definition"></a></dt>
+<dd><p>Returns the circumcircle of the polygon if circumcenter and circumradius exist.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The circumcircle.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Circle" title="pygeox.basic_objects.Circle">Circle</a></p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>NotImplementedError</strong> – If circumcenter or circumradius is not defined for this polygon type.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Polygon.incircle">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">incircle</span></span><a class="headerlink" href="#pygeox.custom_objects.Polygon.incircle" title="Link to this definition"></a></dt>
+<dd><p>Returns the incircle of the polygon if incenter and inradius exist.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The incircle.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Circle" title="pygeox.basic_objects.Circle">Circle</a></p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>NotImplementedError</strong> – If incenter or inradius is not defined for this polygon type.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Polygon.internal_angle_at_point">
+<span class="sig-name descname"><span class="pre">internal_angle_at_point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertex_point</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/custom_objects.html#Polygon.internal_angle_at_point"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.custom_objects.Polygon.internal_angle_at_point" title="Link to this definition"></a></dt>
+<dd><p>Returns the internal angle (in degrees) at a given vertex of the polygon,
+correctly handling convex and concave cases.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>vertex_point</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>) – The vertex at which to compute the internal angle.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Internal angle in degrees, in range (0, 360)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>sympy expression</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Polygon.internal_angles">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">internal_angles</span></span><a class="headerlink" href="#pygeox.custom_objects.Polygon.internal_angles" title="Link to this definition"></a></dt>
+<dd><p>Returns the internal angles at each vertex. Angles [DAB,ABC,BCD,..] for Polygon(A,B,C,D,…).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The internal angles at each vertex in degrees.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list[float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Polygon.num_sides">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_sides</span></span><a class="headerlink" href="#pygeox.custom_objects.Polygon.num_sides" title="Link to this definition"></a></dt>
+<dd><p>Returns a string representation of the Polygon object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>String representation.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Polygon.perimeter">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">perimeter</span></span><a class="headerlink" href="#pygeox.custom_objects.Polygon.perimeter" title="Link to this definition"></a></dt>
+<dd><p>Calculates the perimeter of the polygon by summing side lengths.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The perimeter. Units: same as input coordinates.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>sympy.Expr</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Polygon.sides">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sides</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.LineSegment" title="pygeox.basic_objects.LineSegment"><span class="pre">LineSegment</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#pygeox.custom_objects.Polygon.sides" title="Link to this definition"></a></dt>
+<dd><p>Returns the sides of the polygon as LijneSegment objects, in order. Sides [AB, BC, CD, …] for Polygon(A,B,C,D,…).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The sides of the polygon.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list[LijneSegment]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Quadrilateral">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pygeox.custom_objects.</span></span><span class="sig-name descname"><span class="pre">Quadrilateral</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geoscene</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_to_scene_as_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Quadrilateral'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_convex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/custom_objects.html#Quadrilateral"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.custom_objects.Quadrilateral" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pygeox.custom_objects.Polygon" title="pygeox.custom_objects.Polygon"><code class="xref py py-class docutils literal notranslate"><span class="pre">Polygon</span></code></a></p>
+<p>Represents a general quadrilateral defined by four Point objects.
+Inherits area, perimeter, sides, and internal_angles from Polygon.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p1</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>p2</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>p3</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>p4</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>add_to_scene_as_type</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>force_convex</strong> (<em>bool</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Quadrilateral.diagonals">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">diagonals</span></span><a class="headerlink" href="#pygeox.custom_objects.Quadrilateral.diagonals" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Quadrilateral.midsegments">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">midsegments</span></span><a class="headerlink" href="#pygeox.custom_objects.Quadrilateral.midsegments" title="Link to this definition"></a></dt>
+<dd><p>Returns the two midsegments (lines connecting midpoints of opposite sides) of the quadrilateral.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The two midsegments.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list[<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.LineSegment" title="pygeox.basic_objects.LineSegment">LineSegment</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Rectangle">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pygeox.custom_objects.</span></span><span class="sig-name descname"><span class="pre">Rectangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geoscene</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_to_scene_as_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Rectangle'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_convex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/custom_objects.html#Rectangle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.custom_objects.Rectangle" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pygeox.custom_objects.Parallelogram" title="pygeox.custom_objects.Parallelogram"><code class="xref py py-class docutils literal notranslate"><span class="pre">Parallelogram</span></code></a></p>
+<p>Parallelogram with all angles 90 degrees.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>force_convex</strong> (<em>bool</em>)</p>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Rectangle.area">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">area</span></span><a class="headerlink" href="#pygeox.custom_objects.Rectangle.area" title="Link to this definition"></a></dt>
+<dd><p>Calculates the area of the polygon using the shoelace formula.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The area. Units: square of input coordinates.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>sympy.Expr</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Rectangle.circumcenter">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">circumcenter</span></span><a class="headerlink" href="#pygeox.custom_objects.Rectangle.circumcenter" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Rectangle.circumradius">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">circumradius</span></span><a class="headerlink" href="#pygeox.custom_objects.Rectangle.circumradius" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Rectangle.diagonals">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">diagonals</span></span><a class="headerlink" href="#pygeox.custom_objects.Rectangle.diagonals" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Rectangle.perimeter">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">perimeter</span></span><a class="headerlink" href="#pygeox.custom_objects.Rectangle.perimeter" title="Link to this definition"></a></dt>
+<dd><p>Calculates the perimeter of the polygon by summing side lengths.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The perimeter. Units: same as input coordinates.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>sympy.Expr</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pygeox.custom_objects.RegularHeptagon">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pygeox.custom_objects.</span></span><span class="sig-name descname"><span class="pre">RegularHeptagon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geoscene</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_to_scene_as_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'RegularHeptagon'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/custom_objects.html#RegularHeptagon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.custom_objects.RegularHeptagon" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pygeox.custom_objects.RegularPolygon" title="pygeox.custom_objects.RegularPolygon"><code class="xref py py-class docutils literal notranslate"><span class="pre">RegularPolygon</span></code></a></p>
+<p>A specific type of RegularPolygon with 7 sides.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>points</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>add_to_scene_as_type</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pygeox.custom_objects.RegularHexagon">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pygeox.custom_objects.</span></span><span class="sig-name descname"><span class="pre">RegularHexagon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geoscene</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_to_scene_as_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'RegularHexagon'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/custom_objects.html#RegularHexagon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.custom_objects.RegularHexagon" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pygeox.custom_objects.RegularPolygon" title="pygeox.custom_objects.RegularPolygon"><code class="xref py py-class docutils literal notranslate"><span class="pre">RegularPolygon</span></code></a></p>
+<p>A specific type of RegularPolygon with 6 sides.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>points</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>add_to_scene_as_type</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pygeox.custom_objects.RegularOctagon">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pygeox.custom_objects.</span></span><span class="sig-name descname"><span class="pre">RegularOctagon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geoscene</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_to_scene_as_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'RegularOctagon'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/custom_objects.html#RegularOctagon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.custom_objects.RegularOctagon" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pygeox.custom_objects.RegularPolygon" title="pygeox.custom_objects.RegularPolygon"><code class="xref py py-class docutils literal notranslate"><span class="pre">RegularPolygon</span></code></a></p>
+<p>A specific type of RegularPolygon with 8 sides.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>points</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>add_to_scene_as_type</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pygeox.custom_objects.RegularPentagon">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pygeox.custom_objects.</span></span><span class="sig-name descname"><span class="pre">RegularPentagon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geoscene</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_to_scene_as_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'RegularPentagon'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/custom_objects.html#RegularPentagon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.custom_objects.RegularPentagon" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pygeox.custom_objects.RegularPolygon" title="pygeox.custom_objects.RegularPolygon"><code class="xref py py-class docutils literal notranslate"><span class="pre">RegularPolygon</span></code></a></p>
+<p>A specific type of RegularPolygon with 5 sides.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>points</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>add_to_scene_as_type</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pygeox.custom_objects.RegularPolygon">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pygeox.custom_objects.</span></span><span class="sig-name descname"><span class="pre">RegularPolygon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geoscene</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_to_scene_as_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'RegularPolygon'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/custom_objects.html#RegularPolygon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.custom_objects.RegularPolygon" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pygeox.custom_objects.Polygon" title="pygeox.custom_objects.Polygon"><code class="xref py py-class docutils literal notranslate"><span class="pre">Polygon</span></code></a></p>
+<p>Represents a regular polygon (all sides and angles equal).
+It imposes regularity constraints on the provided points.
+Defines its own reduced parameter set (center, radius, orientation).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>points</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>add_to_scene_as_type</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.RegularPolygon.area">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">area</span></span><a class="headerlink" href="#pygeox.custom_objects.RegularPolygon.area" title="Link to this definition"></a></dt>
+<dd><p>Calculates the area of the regular polygon using its properties.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.RegularPolygon.center">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">center</span></span><a class="headerlink" href="#pygeox.custom_objects.RegularPolygon.center" title="Link to this definition"></a></dt>
+<dd><p>Returns the center point of the regular polygon.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.RegularPolygon.circumcenter">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">circumcenter</span></span><a class="headerlink" href="#pygeox.custom_objects.RegularPolygon.circumcenter" title="Link to this definition"></a></dt>
+<dd><p>Returns:
+Point: The circumcenter of the regular polygon, which coincides with the center for regular polygons.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.RegularPolygon.circumradius">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">circumradius</span></span><a class="headerlink" href="#pygeox.custom_objects.RegularPolygon.circumradius" title="Link to this definition"></a></dt>
+<dd><p>Returns the circumradius of the regular polygon.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.RegularPolygon.diagonal">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">diagonal</span></span><a class="headerlink" href="#pygeox.custom_objects.RegularPolygon.diagonal" title="Link to this definition"></a></dt>
+<dd><p>Longest diagonal of the regular polygon.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.RegularPolygon.height">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">height</span></span><a class="headerlink" href="#pygeox.custom_objects.RegularPolygon.height" title="Link to this definition"></a></dt>
+<dd><p>Height (distance from one side to the opposite vertex) of the regular polygon.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.RegularPolygon.incenter">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">incenter</span></span><a class="headerlink" href="#pygeox.custom_objects.RegularPolygon.incenter" title="Link to this definition"></a></dt>
+<dd><p>Returns:
+Point: The incenter of the regular polygon, which coincides with the center for regular polygons.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.RegularPolygon.inradius">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inradius</span></span><a class="headerlink" href="#pygeox.custom_objects.RegularPolygon.inradius" title="Link to this definition"></a></dt>
+<dd><p>Inradius (apothem) of the regular polygon.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.RegularPolygon.internal_angle">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">internal_angle</span></span><a class="headerlink" href="#pygeox.custom_objects.RegularPolygon.internal_angle" title="Link to this definition"></a></dt>
+<dd><p>Returns:
+float: The internal angle (in degrees) of the regular polygon.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.RegularPolygon.orientation">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">orientation</span></span><a class="headerlink" href="#pygeox.custom_objects.RegularPolygon.orientation" title="Link to this definition"></a></dt>
+<dd><p>Returns the orientation (rotation) of the regular polygon in radians.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.RegularPolygon.perimeter">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">perimeter</span></span><a class="headerlink" href="#pygeox.custom_objects.RegularPolygon.perimeter" title="Link to this definition"></a></dt>
+<dd><p>Calculates the perimeter of the regular polygon using its properties.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.RegularPolygon.side_length">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">side_length</span></span><a class="headerlink" href="#pygeox.custom_objects.RegularPolygon.side_length" title="Link to this definition"></a></dt>
+<dd><p>Side length of the regular polygon.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.RegularPolygon.width">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">width</span></span><a class="headerlink" href="#pygeox.custom_objects.RegularPolygon.width" title="Link to this definition"></a></dt>
+<dd><p>Width (distance between two farthest separated points) of the regular polygon.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Rhomboid">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pygeox.custom_objects.</span></span><span class="sig-name descname"><span class="pre">Rhomboid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geoscene</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_to_scene_as_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Rhomboid'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_convex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/custom_objects.html#Rhomboid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.custom_objects.Rhomboid" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pygeox.custom_objects.Parallelogram" title="pygeox.custom_objects.Parallelogram"><code class="xref py py-class docutils literal notranslate"><span class="pre">Parallelogram</span></code></a></p>
+<p>Parallelogram with adjacent sides of unequal lengths and angles not right.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>force_convex</strong> (<em>bool</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Rhombus">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pygeox.custom_objects.</span></span><span class="sig-name descname"><span class="pre">Rhombus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geoscene</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_to_scene_as_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Rhombus'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_convex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/custom_objects.html#Rhombus"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.custom_objects.Rhombus" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pygeox.custom_objects.Parallelogram" title="pygeox.custom_objects.Parallelogram"><code class="xref py py-class docutils literal notranslate"><span class="pre">Parallelogram</span></code></a></p>
+<p>Parallelogram with all sides equal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>force_convex</strong> (<em>bool</em>)</p>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Rhombus.area">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">area</span></span><a class="headerlink" href="#pygeox.custom_objects.Rhombus.area" title="Link to this definition"></a></dt>
+<dd><p>Calculates the area of the polygon using the shoelace formula.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The area. Units: square of input coordinates.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>sympy.Expr</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Rhombus.incenter">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">incenter</span></span><a class="headerlink" href="#pygeox.custom_objects.Rhombus.incenter" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Rhombus.inradius">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inradius</span></span><a class="headerlink" href="#pygeox.custom_objects.Rhombus.inradius" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pygeox.custom_objects.RightIsoscelesTriangle">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pygeox.custom_objects.</span></span><span class="sig-name descname"><span class="pre">RightIsoscelesTriangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geoscene</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_to_scene_as_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'RightIsoscelesTriangle'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/custom_objects.html#RightIsoscelesTriangle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.custom_objects.RightIsoscelesTriangle" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pygeox.custom_objects.RightTriangle" title="pygeox.custom_objects.RightTriangle"><code class="xref py py-class docutils literal notranslate"><span class="pre">RightTriangle</span></code></a>, <a class="reference internal" href="#pygeox.custom_objects.IsoscelesTriangle" title="pygeox.custom_objects.IsoscelesTriangle"><code class="xref py py-class docutils literal notranslate"><span class="pre">IsoscelesTriangle</span></code></a></p>
+<p>Triangle with a right angle and two equal sides. RightIsoscelesTriangle(A,B,C) means that AB=BC and B is the right angle.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p1</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>p2</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>p3</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>add_to_scene_as_type</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.RightIsoscelesTriangle.circumcenter">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">circumcenter</span></span><a class="headerlink" href="#pygeox.custom_objects.RightIsoscelesTriangle.circumcenter" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.RightIsoscelesTriangle.circumradius">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">circumradius</span></span><a class="headerlink" href="#pygeox.custom_objects.RightIsoscelesTriangle.circumradius" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pygeox.custom_objects.RightTrapezoid">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pygeox.custom_objects.</span></span><span class="sig-name descname"><span class="pre">RightTrapezoid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geoscene</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_to_scene_as_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'IsoscelesTrapezoid'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_convex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/custom_objects.html#RightTrapezoid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.custom_objects.RightTrapezoid" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pygeox.custom_objects.Trapezoid" title="pygeox.custom_objects.Trapezoid"><code class="xref py py-class docutils literal notranslate"><span class="pre">Trapezoid</span></code></a></p>
+<p>Trapezoid with non-parallel sides equal in length. RightTrapezoid(A,B,C,D) means AB is parallel to CD and angle A and D are right angles.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>force_convex</strong> (<em>bool</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pygeox.custom_objects.RightTriangle">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pygeox.custom_objects.</span></span><span class="sig-name descname"><span class="pre">RightTriangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geoscene</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_to_scene_as_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'RightTriangle'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/custom_objects.html#RightTriangle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.custom_objects.RightTriangle" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pygeox.custom_objects.Triangle" title="pygeox.custom_objects.Triangle"><code class="xref py py-class docutils literal notranslate"><span class="pre">Triangle</span></code></a></p>
+<p>Triangle with one right angle. RightTriangle(A,B,C) means that B is the right angle.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p1</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>p2</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>p3</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>add_to_scene_as_type</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pygeox.custom_objects.ScaleneTriangle">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pygeox.custom_objects.</span></span><span class="sig-name descname"><span class="pre">ScaleneTriangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geoscene</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_to_scene_as_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ScaleneTriangle'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/custom_objects.html#ScaleneTriangle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.custom_objects.ScaleneTriangle" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pygeox.custom_objects.Triangle" title="pygeox.custom_objects.Triangle"><code class="xref py py-class docutils literal notranslate"><span class="pre">Triangle</span></code></a></p>
+<p>Triangle with all sides of different lengths.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p1</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>p2</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>p3</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>add_to_scene_as_type</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Square">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pygeox.custom_objects.</span></span><span class="sig-name descname"><span class="pre">Square</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geoscene</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_to_scene_as_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Square'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_convex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/custom_objects.html#Square"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.custom_objects.Square" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pygeox.custom_objects.Rectangle" title="pygeox.custom_objects.Rectangle"><code class="xref py py-class docutils literal notranslate"><span class="pre">Rectangle</span></code></a></p>
+<p>Rectangle with all sides equal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>force_convex</strong> (<em>bool</em>)</p>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Square.area">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">area</span></span><a class="headerlink" href="#pygeox.custom_objects.Square.area" title="Link to this definition"></a></dt>
+<dd><p>Calculates the area of the polygon using the shoelace formula.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The area. Units: square of input coordinates.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>sympy.Expr</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Square.circumcenter">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">circumcenter</span></span><a class="headerlink" href="#pygeox.custom_objects.Square.circumcenter" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Square.circumradius">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">circumradius</span></span><a class="headerlink" href="#pygeox.custom_objects.Square.circumradius" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Square.incenter">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">incenter</span></span><a class="headerlink" href="#pygeox.custom_objects.Square.incenter" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Square.inradius">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inradius</span></span><a class="headerlink" href="#pygeox.custom_objects.Square.inradius" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Square.perimeter">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">perimeter</span></span><a class="headerlink" href="#pygeox.custom_objects.Square.perimeter" title="Link to this definition"></a></dt>
+<dd><p>Calculates the perimeter of the polygon by summing side lengths.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The perimeter. Units: same as input coordinates.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>sympy.Expr</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Trapezoid">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pygeox.custom_objects.</span></span><span class="sig-name descname"><span class="pre">Trapezoid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geoscene</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_to_scene_as_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Trapezoid'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_convex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/custom_objects.html#Trapezoid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.custom_objects.Trapezoid" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pygeox.custom_objects.Quadrilateral" title="pygeox.custom_objects.Quadrilateral"><code class="xref py py-class docutils literal notranslate"><span class="pre">Quadrilateral</span></code></a></p>
+<p>Quadrilateral with at least one pair of parallel sides. Trapezoid(A,B,C,D) means AB is parallel to CD.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>force_convex</strong> (<em>bool</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Triangle">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pygeox.custom_objects.</span></span><span class="sig-name descname"><span class="pre">Triangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geoscene</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_to_scene_as_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Triangle'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pygeox/custom_objects.html#Triangle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pygeox.custom_objects.Triangle" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pygeox.custom_objects.Polygon" title="pygeox.custom_objects.Polygon"><code class="xref py py-class docutils literal notranslate"><span class="pre">Polygon</span></code></a></p>
+<p>Represents a general triangle defined by three Point objects.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p1</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>p2</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>p3</strong> (<a class="reference internal" href="pygeox_basic_objects.html#pygeox.basic_objects.Point" title="pygeox.basic_objects.Point"><em>Point</em></a>)</p></li>
+<li><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>add_to_scene_as_type</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Triangle.altitudes">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">altitudes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></em><a class="headerlink" href="#pygeox.custom_objects.Triangle.altitudes" title="Link to this definition"></a></dt>
+<dd><p>Returns:
+list[LineSegment]: The three altitudes of the triangle, each from a vertex perpendicular to the opposite side.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Triangle.angle_bisectors">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">angle_bisectors</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></em><a class="headerlink" href="#pygeox.custom_objects.Triangle.angle_bisectors" title="Link to this definition"></a></dt>
+<dd><p>Returns:
+list[LineSegment]: The three angle bisectors of the triangle, each bisecting one angle and ending at the opposite side.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Triangle.area">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">area</span></span><a class="headerlink" href="#pygeox.custom_objects.Triangle.area" title="Link to this definition"></a></dt>
+<dd><p>Calculates the area of the triangle using Heron’s formula.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Triangle.circumcenter">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">circumcenter</span></span><a class="headerlink" href="#pygeox.custom_objects.Triangle.circumcenter" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Triangle.circumradius">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">circumradius</span></span><a class="headerlink" href="#pygeox.custom_objects.Triangle.circumradius" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Triangle.heights">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">heights</span></span><a class="headerlink" href="#pygeox.custom_objects.Triangle.heights" title="Link to this definition"></a></dt>
+<dd><p>Returns the heights from each vertex to the opposite side.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Triangle.incenter">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">incenter</span></span><a class="headerlink" href="#pygeox.custom_objects.Triangle.incenter" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Triangle.inradius">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inradius</span></span><a class="headerlink" href="#pygeox.custom_objects.Triangle.inradius" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Triangle.medians">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">medians</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></em><a class="headerlink" href="#pygeox.custom_objects.Triangle.medians" title="Link to this definition"></a></dt>
+<dd><p>Returns:
+list[LineSegment]: The three medians of the triangle, each from a vertex to the midpoint of the opposite side.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Triangle.midsegments">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">midsegments</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></em><a class="headerlink" href="#pygeox.custom_objects.Triangle.midsegments" title="Link to this definition"></a></dt>
+<dd><p>Returns:
+list[LineSegment]: The three midsegments of the triangle, each connecting the midpoints of two sides.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pygeox.custom_objects.Triangle.orthocenter">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">orthocenter</span></span><a class="headerlink" href="#pygeox.custom_objects.Triangle.orthocenter" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Rafael Cabral.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

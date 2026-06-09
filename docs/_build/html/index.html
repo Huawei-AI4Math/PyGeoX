@@ -1,0 +1,250 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PyGeoX documentation &mdash; PyGeoX 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.png"/>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=938c9ccc"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Examples" href="examples.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            PyGeoX
+              <img src="_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pygeox.html">Main geometric scene</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pygeox.html#module-pygeox.add_objects">Add geometric objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pygeox.html#module-pygeox.relationship">Add relationships</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pygeox.html#module-pygeox.constraint">Add constraints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pygeox.html#module-pygeox.solver">Solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pygeox.html#basic-objects-point-lines-circles-arcs">Basic Objects (point, lines, circles, arcs)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pygeox.html#module-pygeox.custom_objects">Polygons</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pygeox.html#animation-under-construction">Animation (Under construction)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">PyGeoX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">PyGeoX documentation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pygeox-documentation">
+<h1>PyGeoX documentation<a class="headerlink" href="#pygeox-documentation" title="Link to this heading"></a></h1>
+<blockquote>
+<div><p><strong>PyGeoX</strong> is an interactive Python library designed to create, manipulate, visualize, and solve geometric problems symbolically and numerically. Ideal for educational purposes, research, and interactive geometry explorations, PyGeoX simplifies geometric constructions and constraint solving with an intuitive, readable Python syntax.</p>
+<hr class="docutils" />
+<section id="philosophy-and-design">
+<h2>Philosophy and Design<a class="headerlink" href="#philosophy-and-design" title="Link to this heading"></a></h2>
+<p>PyGeoX follows a object-oriented approach, where geometry becomes intuitive Python code. It supports creating geometric scenes, adding and relating geometric objects, defining precise constraints, and seamlessly solving complex geometry problems.</p>
+<p>The philosophy behind PyGeoX revolves around simplicity, clarity, and flexibility:</p>
+<ul class="simple">
+<li><p><strong>Simple Syntax:</strong> Clearly defined commands mimic geometric language.</p></li>
+<li><p><strong>Automatic Constraint Management:</strong> Constraints are implicitly added when relationships are defined.</p></li>
+<li><p><strong>Rich Property Access:</strong> Directly access properties like areas, lengths, midpoints, and more.</p></li>
+</ul>
+<hr class="docutils" />
+</section>
+<section id="getting-started-with-pygeox">
+<h2>Getting Started with PyGeoX<a class="headerlink" href="#getting-started-with-pygeox" title="Link to this heading"></a></h2>
+<p>The main functionalities are described below. Please click <code class="docutils literal notranslate"><span class="pre">Examples</span></code> in the left panel to check several use cases.</p>
+<section id="create-a-scene">
+<h3>Create a Scene<a class="headerlink" href="#create-a-scene" title="Link to this heading"></a></h3>
+<p>Start your geometry exploration by defining a scene:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pygeox</span> <span class="kn">import</span> <span class="n">GeoScene</span>
+
+<span class="n">scene</span> <span class="o">=</span> <span class="n">GeoScene</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>  <span class="c1"># creates a scene with domain from -10 to 10</span>
+</pre></div>
+</div>
+</section>
+<section id="add-objects">
+<h3>Add Objects<a class="headerlink" href="#add-objects" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>PyGeoX contains <strong>37 fundamental geometric objects:</strong> Points, Lines, Segments, Rays, Circles, Arcs, Triangles, Quadrilaterals, Regular Polygons, and more.</p></li>
+<li><p>Please click <code class="docutils literal notranslate"><span class="pre">Add</span> <span class="pre">geometric</span> <span class="pre">objects</span></code> on the left panel to check all objects that can be added.</p></li>
+<li><p>PyGeoX makes creating geometric figures simple:</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">points</span><span class="p">([</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">])</span>
+<span class="n">triangle</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">triangle</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">)</span>
+<span class="n">circle</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">circle</span><span class="p">(</span><span class="n">center</span><span class="o">=</span><span class="n">A</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Each object has <strong>2-15 detailed properties</strong> such as area, perimeter, midpoint, centroid, circumcircle, incircle, altitudes, and medians.</p></li>
+<li><p>Example property access:</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">area</span> <span class="o">=</span> <span class="n">triangle</span><span class="o">.</span><span class="n">area</span>
+<span class="n">length</span> <span class="o">=</span> <span class="n">line_AB</span><span class="o">.</span><span class="n">length</span>
+<span class="n">mid_segment</span> <span class="o">=</span> <span class="n">triangle</span><span class="o">.</span><span class="n">midsegment</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Please click <code class="docutils literal notranslate"><span class="pre">Basic</span> <span class="pre">Objects</span></code> and <code class="docutils literal notranslate"><span class="pre">Polygons</span></code> on the left panel to see all object properties.</p></li>
+</ul>
+</section>
+<section id="define-relationships">
+<h3>Define Relationships<a class="headerlink" href="#define-relationships" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>PyGeoX contains <strong>27 geometric relationships:</strong> parallel, tangent, similarity, inside/outside containment, etc.</p></li>
+<li><p>Please click <code class="docutils literal notranslate"><span class="pre">Add</span> <span class="pre">relationships</span></code> on the left panel to check all relationships that can be added.</p></li>
+<li><p>Relationships automatically introduce constraints to <code class="docutils literal notranslate"><span class="pre">scene</span></code>:</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Make line AB parallel to line CD</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">relate</span><span class="o">.</span><span class="n">parallel</span><span class="p">(</span><span class="n">line_AB</span><span class="p">,</span> <span class="n">line_CD</span><span class="p">)</span>
+
+<span class="c1"># Point P lies on circle</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">relate</span><span class="o">.</span><span class="n">point_lies_on</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">circle</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>This implicitly adds constraints like:</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Example internal constraint:</span>
+<span class="c1"># (line_AB.direction_vector × line_CD.direction_vector) = 0</span>
+</pre></div>
+</div>
+</section>
+<section id="add-custom-constraints">
+<h3>Add Custom Constraints<a class="headerlink" href="#add-custom-constraints" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Please click <code class="docutils literal notranslate"><span class="pre">Add</span> <span class="pre">constraints</span></code> on the left panel to check all constraints that can be added.</p></li>
+<li><p>Define explicit mathematical constraints:</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sympy</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">constraint</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">triangle</span><span class="o">.</span><span class="n">area</span><span class="p">,</span> <span class="n">sympy</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">circle</span><span class="o">.</span><span class="n">perimeter</span><span class="p">)</span> <span class="o">/</span> <span class="n">circle</span><span class="o">.</span><span class="n">area</span><span class="p">)</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">constraint</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="n">line_AB</span><span class="o">.</span><span class="n">length</span><span class="p">,</span> <span class="n">circle</span><span class="o">.</span><span class="n">radius</span><span class="p">)</span>
+</pre></div>
+</div>
+<hr class="docutils" />
+</section>
+</section>
+<section id="solving-geometric-problems">
+<h2>Solving Geometric Problems<a class="headerlink" href="#solving-geometric-problems" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>PyGeoX provides both analytical (symbolic) and numerical solvers.</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">scene</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">analytical</span><span class="p">()</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">numerical</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;basinhopping&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>The numerical solver avoid degenerate solutions (e.g., points too close, radius too small) by adding extra constraints.</p></li>
+<li><p>Please click <code class="docutils literal notranslate"><span class="pre">Solvers</span></code> on the left panel to see all available options.</p></li>
+</ul>
+<section id="visualize-results">
+<h3>Visualize Results<a class="headerlink" href="#visualize-results" title="Link to this heading"></a></h3>
+<p>Easily visualize solutions with built-in plotting:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">scene</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+</pre></div>
+</div>
+<hr class="docutils" />
+</section>
+</section>
+<section id="under-construction">
+<h2>Under Construction<a class="headerlink" href="#under-construction" title="Link to this heading"></a></h2>
+<section id="animation-and-interactive-explorations">
+<h3>Animation and Interactive Explorations<a class="headerlink" href="#animation-and-interactive-explorations" title="Link to this heading"></a></h3>
+<p>Future PyGeoX versions will support animations and dynamic geometry, such as moving points:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">anim_lambda</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">animate</span><span class="o">.</span><span class="n">add_parameter</span><span class="p">(</span><span class="s2">&quot;lambda&quot;</span><span class="p">)</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">animate</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">frames</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">animate</span><span class="o">.</span><span class="n">gif</span><span class="p">(</span><span class="s2">&quot;animation.gif&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="automated-geometry-proofs">
+<h3>Automated Geometry Proofs<a class="headerlink" href="#automated-geometry-proofs" title="Link to this heading"></a></h3>
+<p>PyGeoX is developing an integrated proving system, enabling automated geometric proofs:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">scene</span><span class="o">.</span><span class="n">proving</span><span class="p">()</span> <span class="k">as</span> <span class="n">prover</span><span class="p">:</span>
+    <span class="n">scene</span><span class="o">.</span><span class="n">relate</span><span class="o">.</span><span class="n">collinear</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">)</span>
+
+<span class="n">scene</span><span class="o">.</span><span class="n">prove</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+<div class="toctree-wrapper compound">
+</div>
+</div></blockquote>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="examples.html" class="btn btn-neutral float-right" title="Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Rafael Cabral.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

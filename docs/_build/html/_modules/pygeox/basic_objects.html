@@ -1,0 +1,931 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pygeox.basic_objects &mdash; PyGeoX 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../../_static/favicon.png"/>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=938c9ccc"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            PyGeoX
+              <img src="../../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pygeox.html">Main geometric scene</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pygeox.html#module-pygeox.add_objects">Add geometric objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pygeox.html#module-pygeox.relationship">Add relationships</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pygeox.html#module-pygeox.constraint">Add constraints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pygeox.html#module-pygeox.solver">Solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pygeox.html#basic-objects-point-lines-circles-arcs">Basic Objects (point, lines, circles, arcs)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pygeox.html#module-pygeox.custom_objects">Polygons</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pygeox.html#animation-under-construction">Animation (Under construction)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">PyGeoX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pygeox.basic_objects</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pygeox.basic_objects</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">basic_objects.py: Fundamental 2D geometric primitives with symbolic or numeric coordinates.</span>
+
+<span class="sd">Defines Point, LineLike, LineSegment, Line, Ray, Circle, and Arc classes with</span>
+<span class="sd">methods for geometric computations such as distance, angle, slope, and length.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">sympy</span>
+<span class="kn">from</span> <span class="nn">typeguard</span> <span class="kn">import</span> <span class="n">typechecked</span>
+
+<span class="n">Coordinate</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">sympy</span><span class="o">.</span><span class="n">Expr</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="Point">
+<a class="viewcode-back" href="../../source/pygeox_basic_objects.html#pygeox.basic_objects.Point">[docs]</a>
+<span class="nd">@typechecked</span>
+<span class="k">class</span> <span class="nc">Point</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents a 2D point with symbolic or numeric coordinates.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        name (str): Point name.</span>
+<span class="sd">        x (Coordinate): X coordinate.</span>
+<span class="sd">        y (Coordinate): Y coordinate.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Coordinate</span><span class="p">],</span> <span class="n">y</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Coordinate</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a Point.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name: Name of the point.</span>
+<span class="sd">            x: X coordinate (symbolic or numeric).</span>
+<span class="sd">            y: Y coordinate (symbolic or numeric).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">y</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return string representation of the Point.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Point(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">, x=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="si">}</span><span class="s2">, y=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+<div class="viewcode-block" id="Point.distance">
+<a class="viewcode-back" href="../../source/pygeox_basic_objects.html#pygeox.basic_objects.Point.distance">[docs]</a>
+    <span class="k">def</span> <span class="nf">distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other_point</span><span class="p">:</span> <span class="s2">&quot;Point&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the Euclidean distance to another point.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other_point (Point): The other point.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            sympy.Expr: The distance between self and other_point.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">sympy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">other_point</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">other_point</span><span class="o">.</span><span class="n">y</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Point.distance_squared">
+<a class="viewcode-back" href="../../source/pygeox_basic_objects.html#pygeox.basic_objects.Point.distance_squared">[docs]</a>
+    <span class="k">def</span> <span class="nf">distance_squared</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other_point</span><span class="p">:</span> <span class="s2">&quot;Point&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the squared Euclidean distance to another point.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other_point (Point): The other point.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            sympy.Expr: The squared distance between self and other_point.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">other_point</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">other_point</span><span class="o">.</span><span class="n">y</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span></div>
+
+
+<div class="viewcode-block" id="Point.angle">
+<a class="viewcode-back" href="../../source/pygeox_basic_objects.html#pygeox.basic_objects.Point.angle">[docs]</a>
+    <span class="k">def</span> <span class="nf">angle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point_b</span><span class="p">:</span> <span class="s2">&quot;Point&quot;</span><span class="p">,</span> <span class="n">point_c</span><span class="p">:</span> <span class="s2">&quot;Point&quot;</span><span class="p">,</span> <span class="n">signed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;sympy.Expr&#39;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute angle at self between vectors to point_b and point_c in degrees.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            point_b: First point defining angle arm.</span>
+<span class="sd">            point_c: Second point defining angle arm.</span>
+<span class="sd">            signed: If True, return signed angle (CCW positive).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            sympy.Expr: Angle in degrees.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">vector_ab_x</span> <span class="o">=</span> <span class="n">point_b</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span>
+        <span class="n">vector_ab_y</span> <span class="o">=</span> <span class="n">point_b</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span>
+        <span class="n">vector_ac_x</span> <span class="o">=</span> <span class="n">point_c</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span>
+        <span class="n">vector_ac_y</span> <span class="o">=</span> <span class="n">point_c</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span>
+
+        <span class="n">magnitude_ab</span> <span class="o">=</span> <span class="n">sympy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">vector_ab_x</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">vector_ab_y</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">magnitude_ac</span> <span class="o">=</span> <span class="n">sympy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">vector_ac_x</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">vector_ac_y</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">dot_product</span> <span class="o">=</span> <span class="n">vector_ab_x</span> <span class="o">*</span> <span class="n">vector_ac_x</span> <span class="o">+</span> <span class="n">vector_ab_y</span> <span class="o">*</span> <span class="n">vector_ac_y</span>
+
+        <span class="k">if</span> <span class="n">signed</span><span class="p">:</span>
+            <span class="n">cross_product_z</span> <span class="o">=</span> <span class="n">vector_ab_x</span> <span class="o">*</span> <span class="n">vector_ac_y</span> <span class="o">-</span> <span class="n">vector_ab_y</span> <span class="o">*</span> <span class="n">vector_ac_x</span>
+            <span class="n">angle_rad</span> <span class="o">=</span> <span class="n">sympy</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span><span class="n">cross_product_z</span><span class="p">,</span> <span class="n">dot_product</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">denominator</span> <span class="o">=</span> <span class="n">magnitude_ab</span> <span class="o">*</span> <span class="n">magnitude_ac</span>
+            <span class="n">cos_angle</span> <span class="o">=</span> <span class="n">dot_product</span> <span class="o">/</span> <span class="n">denominator</span>
+            <span class="n">angle_rad</span> <span class="o">=</span> <span class="n">sympy</span><span class="o">.</span><span class="n">acos</span><span class="p">(</span><span class="n">cos_angle</span><span class="p">)</span>
+
+        <span class="n">angle_deg</span> <span class="o">=</span> <span class="n">angle_rad</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">/</span> <span class="n">sympy</span><span class="o">.</span><span class="n">pi</span>
+        <span class="k">return</span> <span class="n">angle_deg</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="LineLike">
+<a class="viewcode-back" href="../../source/pygeox_basic_objects.html#pygeox.basic_objects.LineLike">[docs]</a>
+<span class="nd">@typechecked</span>
+<span class="k">class</span> <span class="nc">LineLike</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for geometric entities that are line-like (LineSegment, Line, Ray).</span>
+<span class="sd">    Defined by two Point objects.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point1</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span> <span class="n">point2</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a LineLike object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            point1 (Point): The first defining point.</span>
+<span class="sd">            point2 (Point): The second defining point.</span>
+<span class="sd">            name (str, optional): The name of the line-like object. If None, auto-generated.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If point1 and point2 are the same.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">point1</span> <span class="o">==</span> <span class="n">point2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;point1 and point2 cannot be the same for a line-like object.&quot;</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">point1</span> <span class="o">=</span> <span class="n">point1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">point2</span> <span class="o">=</span> <span class="n">point2</span>
+        <span class="c1"># Auto-generate name based on the class type and point names</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">name</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">point1</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">point2</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">slope</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Coordinate</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the slope of the infinite line passing through point1 and point2.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            sympy.Expr: The slope, or sympy.oo (symbolic infinity) for vertical lines.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">point1</span><span class="o">.</span><span class="n">x</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">point2</span><span class="o">.</span><span class="n">x</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">sympy</span><span class="o">.</span><span class="n">oo</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">point2</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">point1</span><span class="o">.</span><span class="n">y</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">point2</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">point1</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Coordinate</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the y-intercept (c) of the infinite line defined by point1 and point2</span>
+<span class="sd">        (in the form y = mx + c).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            sympy.Expr: The y-intercept, or sympy.nan for vertical lines.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">point1</span><span class="o">.</span><span class="n">x</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">point2</span><span class="o">.</span><span class="n">x</span><span class="p">:</span>  <span class="c1"># Vertical line, no y-intercept</span>
+            <span class="k">return</span> <span class="n">sympy</span><span class="o">.</span><span class="n">nan</span>  <span class="c1"># Not a Number, indicating no y-intercept</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Use the equation c = y - mx, with coordinates from point1</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">point1</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">slope</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">point1</span><span class="o">.</span><span class="n">x</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">direction_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Coordinate</span><span class="p">,</span> <span class="n">Coordinate</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the direction vector of the ray, from start_point to direction_point.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[sympy.Expr, sympy.Expr]: The (dx, dy) vector components.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">point2</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">point1</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">point2</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">point1</span><span class="o">.</span><span class="n">y</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a generic string representation of the LineLike object.</span>
+<span class="sd">        Subclasses may override for more specific details.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(name=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;, p1=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">point1</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">, p2=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">point2</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="LineSegment">
+<a class="viewcode-back" href="../../source/pygeox_basic_objects.html#pygeox.basic_objects.LineSegment">[docs]</a>
+<span class="nd">@typechecked</span>
+<span class="k">class</span> <span class="nc">LineSegment</span><span class="p">(</span><span class="n">LineLike</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents a line segment defined by two Point objects.</span>
+<span class="sd">    This class contains methods specific to a finite segment.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point1</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span> <span class="n">point2</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a LineSegment.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            point1 (Point): First endpoint.</span>
+<span class="sd">            point2 (Point): Second endpoint.</span>
+<span class="sd">            name (str, optional): Name for the line segment. If None, auto-generated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">point1</span><span class="p">,</span> <span class="n">point2</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="c1"># Override auto-generated name from LineLike if specific format is desired</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">name</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;LineSegment_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">point1</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">point2</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">length</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sympy</span><span class="o">.</span><span class="n">Expr</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the length of the line segment.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            sympy.Expr: The distance between point1 and point2.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">point1</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">point2</span><span class="p">)</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">midpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Point</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the midpoint of the line segment.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Point: The midpoint as a new Point object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x_mid</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">point1</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">point2</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">y_mid</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">point1</span><span class="o">.</span><span class="n">y</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">point2</span><span class="o">.</span><span class="n">y</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;mid_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">point1</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">point2</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="n">Point</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">x_mid</span><span class="p">,</span> <span class="n">y_mid</span><span class="p">)</span>
+
+<div class="viewcode-block" id="LineSegment.angle">
+<a class="viewcode-back" href="../../source/pygeox_basic_objects.html#pygeox.basic_objects.LineSegment.angle">[docs]</a>
+    <span class="k">def</span> <span class="nf">angle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other_line_segment</span><span class="p">:</span> <span class="s2">&quot;LineSegment&quot;</span><span class="p">,</span> <span class="n">signed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sympy</span><span class="o">.</span><span class="n">Expr</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the angle between this line segment and another line segment</span>
+<span class="sd">        at their common intersection point (vertex).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other_line_segment (LineSegment): The other line segment.</span>
+<span class="sd">            signed (bool): If True, returns the signed angle.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            sympy.Expr: The angle in degrees.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If line segments do not meet at a single common vertex.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Collect all four points involved</span>
+        <span class="n">all_points</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">point1</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">point2</span><span class="p">,</span>
+            <span class="n">other_line_segment</span><span class="o">.</span><span class="n">point1</span><span class="p">,</span>
+            <span class="n">other_line_segment</span><span class="o">.</span><span class="n">point2</span><span class="p">,</span>
+        <span class="p">]</span>
+
+        <span class="c1"># Use a dictionary to count occurrences of each point to find the common vertex</span>
+        <span class="n">point_counts</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">pt</span> <span class="ow">in</span> <span class="n">all_points</span><span class="p">:</span>
+            <span class="n">point_counts</span><span class="p">[</span><span class="n">pt</span><span class="p">]</span> <span class="o">=</span> <span class="n">point_counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pt</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="n">vertex</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">unique_points_for_angle</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># Points that are endpoints of the segments but not the common vertex</span>
+
+        <span class="k">for</span> <span class="n">pt</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">point_counts</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">count</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>  <span class="c1"># This point is common to both segments (the vertex)</span>
+                <span class="n">vertex</span> <span class="o">=</span> <span class="n">pt</span>
+            <span class="k">elif</span> <span class="n">count</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># This point is an endpoint of only one segment</span>
+                <span class="n">unique_points_for_angle</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pt</span><span class="p">)</span>
+
+        <span class="c1"># For a valid angle computation between two segments sharing an endpoint,</span>
+        <span class="c1"># there must be exactly one common vertex and two other unique endpoints.</span>
+        <span class="k">if</span> <span class="n">vertex</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_points_for_angle</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Line segments do not meet at a single common vertex; cannot compute angle. &quot;</span>
+                <span class="s2">&quot;Ensure they share exactly one endpoint.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Pass the two non-vertex points to the vertex&#39;s angle method</span>
+        <span class="n">point_on_segment1</span><span class="p">,</span> <span class="n">point_on_segment2</span> <span class="o">=</span> <span class="n">unique_points_for_angle</span>
+        <span class="k">return</span> <span class="n">vertex</span><span class="o">.</span><span class="n">angle</span><span class="p">(</span><span class="n">point_on_segment1</span><span class="p">,</span> <span class="n">point_on_segment2</span><span class="p">,</span> <span class="n">signed</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a string representation of the LineSegment, including its length.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;LineSegment(name=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;, p1=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">point1</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">, p2=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">point2</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">, length=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="Line">
+<a class="viewcode-back" href="../../source/pygeox_basic_objects.html#pygeox.basic_objects.Line">[docs]</a>
+<span class="nd">@typechecked</span>
+<span class="k">class</span> <span class="nc">Line</span><span class="p">(</span><span class="n">LineLike</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents an infinite line defined by two Point objects.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point1</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span> <span class="n">point2</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize an infinite Line.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            point1 (Point): First defining point.</span>
+<span class="sd">            point2 (Point): Second defining point.</span>
+<span class="sd">            name (str, optional): Name for the line. If None, auto-generated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">point1</span><span class="p">,</span> <span class="n">point2</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;Line_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">point1</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">point2</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">equation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sympy</span><span class="o">.</span><span class="n">Expr</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the equation of the line in the form Ax + By + C = 0.</span>
+<span class="sd">        The result is a SymPy expression that evaluates to zero for points on the line.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            sympy.Expr: The symbolic equation of the line.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x_sym</span><span class="p">,</span> <span class="n">y_sym</span> <span class="o">=</span> <span class="n">sympy</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s2">&quot;x y&quot;</span><span class="p">)</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">slope</span>
+
+        <span class="k">if</span> <span class="n">m</span> <span class="o">==</span> <span class="n">sympy</span><span class="o">.</span><span class="n">oo</span><span class="p">:</span>  <span class="c1"># Vertical line: x - x_constant = 0</span>
+            <span class="k">return</span> <span class="n">x_sym</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">point1</span><span class="o">.</span><span class="n">x</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># Non-vertical line: y - y1 = m(x - x1)  =&gt;  y - y1 - m(x - x1) = 0</span>
+            <span class="k">return</span> <span class="n">y_sym</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">point1</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">m</span> <span class="o">*</span> <span class="p">(</span><span class="n">x_sym</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">point1</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a string representation of the Line, including its equation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Line(name=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;, p1=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">point1</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">, p2=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">point2</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">, equation=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">equation</span><span class="si">}</span><span class="s2"> = 0)&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="Ray">
+<a class="viewcode-back" href="../../source/pygeox_basic_objects.html#pygeox.basic_objects.Ray">[docs]</a>
+<span class="nd">@typechecked</span>
+<span class="k">class</span> <span class="nc">Ray</span><span class="p">(</span><span class="n">LineLike</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents a ray defined by a starting Point and a second Point indicating its direction.</span>
+<span class="sd">    The ray extends infinitely from the start_point through the direction_point.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">start_point</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span> <span class="n">direction_point</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a Ray.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            start_point (Point): The starting point (origin) of the ray.</span>
+<span class="sd">            direction_point (Point): A point that defines the direction of the ray.</span>
+<span class="sd">            name (str, optional): Name for the ray. If None, auto-generated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Call LineLike&#39;s init, treating start_point as point1 and direction_point as point2</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">start_point</span><span class="p">,</span> <span class="n">direction_point</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_point</span> <span class="o">=</span> <span class="n">start_point</span>  <span class="c1"># Alias for point1 for clarity in Ray context</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">direction_point</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">direction_point</span>  <span class="c1"># Alias for point2 for clarity in Ray context</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">name</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;Ray_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start_point</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_to_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">direction_point</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">length</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sympy</span><span class="o">.</span><span class="n">oo</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the length of the ray, which is infinite.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            sympy.oo: Symbolic infinity.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">sympy</span><span class="o">.</span><span class="n">oo</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a string representation of the Ray.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Ray(name=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;, start=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start_point</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">, direction_through=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">direction_point</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">, length=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="Circle">
+<a class="viewcode-back" href="../../source/pygeox_basic_objects.html#pygeox.basic_objects.Circle">[docs]</a>
+<span class="nd">@typechecked</span>
+<span class="k">class</span> <span class="nc">Circle</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents a circle defined by its center Point and radius (symbolic or numeric).</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        center (Point): The center of the circle.</span>
+<span class="sd">        radius (Coordinate): The radius (can be symbolic or numeric).</span>
+<span class="sd">        name (str): The name of the circle.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">center</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span> <span class="n">radius</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Coordinate</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a Circle.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            center (Point): The center point.</span>
+<span class="sd">            radius (Coordinate): The radius.</span>
+<span class="sd">            name (str, optional): Name for the circle. If None, auto-generated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">center</span> <span class="o">=</span> <span class="n">center</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">radius</span> <span class="o">=</span> <span class="n">radius</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;Circle_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">center</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">area</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the area of the circle.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            sympy.Expr: The area.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">sympy</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">radius</span><span class="o">**</span><span class="mi">2</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">perimeter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the circumference of the circle.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            sympy.Expr: The circumference.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">sympy</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">radius</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">diameter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the diameter (length) of the circle.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            sympy.Expr: The diameter (2 * radius).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">radius</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a string representation of the Circle.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Circle(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">, center=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">center</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">, radius=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">radius</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="BaseArc">
+<a class="viewcode-back" href="../../source/pygeox_basic_objects.html#pygeox.basic_objects.BaseArc">[docs]</a>
+<span class="nd">@typechecked</span>
+<span class="k">class</span> <span class="nc">BaseArc</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for arcs, defined by a center and two endpoints.</span>
+<span class="sd">    Not intended to be used directly.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        center (Point): The center of the arc&#39;s circle.</span>
+<span class="sd">        start_point (Point): The start point of the arc.</span>
+<span class="sd">        end_point (Point): The end point of the arc.</span>
+<span class="sd">        name (str): The name of the arc.</span>
+<span class="sd">        arc_type (str): The type of arc (&quot;Arc&quot;, &quot;MinorArc&quot;, &quot;MajorArc&quot;).</span>
+<span class="sd">        start_radius_line (Line): Line from center to start_point.</span>
+<span class="sd">        end_radius_line (Line): Line from center to end_point.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">center</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span>
+        <span class="n">start_point</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span>
+        <span class="n">end_point</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">arc_type</span><span class="o">=</span><span class="s2">&quot;Arc&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a BaseArc after validating that both start_point and end_point lie on the same circle centered at &#39;center&#39;.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            center (Point): Center of the arc&#39;s circle.</span>
+<span class="sd">            start_point (Point): Start point of the arc.</span>
+<span class="sd">            end_point (Point): End point of the arc.</span>
+<span class="sd">            name (str, optional): Name for the arc. If None, auto-generated.</span>
+<span class="sd">            arc_type (str): Type of arc (&quot;Arc&quot;, &quot;MinorArc&quot;, &quot;MajorArc&quot;).</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If start_point or end_point is not on the circle defined by center and radius.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">center</span> <span class="o">=</span> <span class="n">center</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_point</span> <span class="o">=</span> <span class="n">start_point</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">end_point</span> <span class="o">=</span> <span class="n">end_point</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">name</span> <span class="ow">or</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">arc_type</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">center</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">start_point</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">end_point</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">arc_type</span> <span class="o">=</span> <span class="n">arc_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_radius_line</span> <span class="o">=</span> <span class="n">LineSegment</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">center</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_point</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;line_radius_start_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">end_radius_line</span> <span class="o">=</span> <span class="n">LineSegment</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">center</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_point</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;line_radius_end_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">radius</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the radius of the arc (distance from center to start_point).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            sympy.Expr: The radius.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">center</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_point</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_angle_rad</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the angle (in radians) between the start and end points at the center.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            sympy.Expr: The angle in radians.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># safe_radius = sympy.Piecewise(</span>
+        <span class="c1">#    (sympy.S.One, sympy.Abs(self.radius) &lt;= 1e-5), # If radius is near zero, use 1</span>
+        <span class="c1">#    (self.radius, True)                # Otherwise, use the original radius</span>
+        <span class="c1"># )</span>
+
+        <span class="n">v_start_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_point</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">center</span><span class="o">.</span><span class="n">x</span>
+        <span class="n">v_start_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_point</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">center</span><span class="o">.</span><span class="n">y</span>
+        <span class="n">v_end_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_point</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">center</span><span class="o">.</span><span class="n">x</span>
+        <span class="n">v_end_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_point</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">center</span><span class="o">.</span><span class="n">y</span>
+        <span class="n">dot_product</span> <span class="o">=</span> <span class="n">v_start_x</span> <span class="o">*</span> <span class="n">v_end_x</span> <span class="o">+</span> <span class="n">v_start_y</span> <span class="o">*</span> <span class="n">v_end_y</span>
+        <span class="n">cos_theta</span> <span class="o">=</span> <span class="n">dot_product</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">radius</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">sympy</span><span class="o">.</span><span class="n">acos</span><span class="p">(</span><span class="n">cos_theta</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="MinorArc">
+<a class="viewcode-back" href="../../source/pygeox_basic_objects.html#pygeox.basic_objects.MinorArc">[docs]</a>
+<span class="nd">@typechecked</span>
+<span class="k">class</span> <span class="nc">MinorArc</span><span class="p">(</span><span class="n">BaseArc</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents the minor arc (smaller arc) between two points on a circle.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">center</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span>
+        <span class="n">start_point</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span>
+        <span class="n">end_point</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">start_point</span><span class="p">,</span> <span class="n">end_point</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">arc_type</span><span class="o">=</span><span class="s2">&quot;MinorArc&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">central_angle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the central angle of the minor arc in degrees (0 to 180).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            sympy.Expr: The angle in degrees.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_angle_rad</span><span class="p">()</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">/</span> <span class="n">sympy</span><span class="o">.</span><span class="n">pi</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">inscribed_angle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the inscribed angle subtended by the arc in degrees.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            sympy.Expr: The inscribed angle in degrees.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">central_angle</span> <span class="o">/</span> <span class="mi">2</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">length</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a non-standard &#39;length&#39; of the minor arc, calculated as radius * (angle in degrees).</span>
+
+<span class="sd">        Note: Standard arc length requires the angle in radians (s = r * theta_radians).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            sympy.Expr: The arc length.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">radius</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">central_angle</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">area</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the area of the sector defined by the minor arc.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            sympy.Expr: The sector area.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">radius</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_angle_rad</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a string representation of the MinorArc.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;MinorArc(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">, center=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">center</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">, r=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">radius</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;start=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start_point</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">, end=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">end_point</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;central_angle=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">central_angle</span><span class="si">}</span><span class="s2"> deg, length=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="MajorArc">
+<a class="viewcode-back" href="../../source/pygeox_basic_objects.html#pygeox.basic_objects.MajorArc">[docs]</a>
+<span class="nd">@typechecked</span>
+<span class="k">class</span> <span class="nc">MajorArc</span><span class="p">(</span><span class="n">BaseArc</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents the major arc (larger arc) between two points on a circle.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">center</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span>
+        <span class="n">start_point</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span>
+        <span class="n">end_point</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">start_point</span><span class="p">,</span> <span class="n">end_point</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">arc_type</span><span class="o">=</span><span class="s2">&quot;MajorArc&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">central_angle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the central angle of the major arc in degrees (180 to 360).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            sympy.Expr: The angle in degrees.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="mi">360</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_angle_rad</span><span class="p">()</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">/</span> <span class="n">sympy</span><span class="o">.</span><span class="n">pi</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">inscribed_angle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the inscribed angle subtended by the arc in degrees.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            sympy.Expr: The inscribed angle in degrees.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">central_angle</span> <span class="o">/</span> <span class="mi">2</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">length</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a non-standard &#39;length&#39; of the major arc, calculated as radius * (angle in degrees).</span>
+
+<span class="sd">        Note: Standard arc length requires the angle in radians (s = r * theta_radians).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            sympy.Expr: The arc length.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">radius</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">central_angle</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">area</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the area of the sector defined by the major arc.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            sympy.Expr: The sector area.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">radius</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">sympy</span><span class="o">.</span><span class="n">pi</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_angle_rad</span><span class="p">())</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">midpoint</span><span class="p">(</span><span class="n">arc</span><span class="p">:</span> <span class="s2">&quot;MajorArc&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Point</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculates and returns the midpoint of the major arc.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            arc (MajorArc): The MajorArc instance.</span>
+<span class="sd">            name (str, optional): Name for the midpoint. If None, auto-generated.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Point: The midpoint as a new Point object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cx</span><span class="p">,</span> <span class="n">cy</span> <span class="o">=</span> <span class="n">arc</span><span class="o">.</span><span class="n">center</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">arc</span><span class="o">.</span><span class="n">center</span><span class="o">.</span><span class="n">y</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">arc</span><span class="o">.</span><span class="n">radius</span>
+
+        <span class="n">sx</span><span class="p">,</span> <span class="n">sy</span> <span class="o">=</span> <span class="n">arc</span><span class="o">.</span><span class="n">start_point</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">arc</span><span class="o">.</span><span class="n">start_point</span><span class="o">.</span><span class="n">y</span>
+        <span class="n">ex</span><span class="p">,</span> <span class="n">ey</span> <span class="o">=</span> <span class="n">arc</span><span class="o">.</span><span class="n">end_point</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">arc</span><span class="o">.</span><span class="n">end_point</span><span class="o">.</span><span class="n">y</span>
+
+        <span class="c1"># Vectors from center to start and end</span>
+        <span class="n">us_x</span><span class="p">,</span> <span class="n">us_y</span> <span class="o">=</span> <span class="n">sx</span> <span class="o">-</span> <span class="n">cx</span><span class="p">,</span> <span class="n">sy</span> <span class="o">-</span> <span class="n">cy</span>
+        <span class="n">ue_x</span><span class="p">,</span> <span class="n">ue_y</span> <span class="o">=</span> <span class="n">ex</span> <span class="o">-</span> <span class="n">cx</span><span class="p">,</span> <span class="n">ey</span> <span class="o">-</span> <span class="n">cy</span>
+
+        <span class="c1"># Compute cos(theta) and sin(theta) between start and end</span>
+
+        <span class="n">dot</span> <span class="o">=</span> <span class="n">us_x</span> <span class="o">*</span> <span class="n">ue_x</span> <span class="o">+</span> <span class="n">us_y</span> <span class="o">*</span> <span class="n">ue_y</span>
+        <span class="c1"># denominator = sympy.Piecewise(</span>
+        <span class="c1">#    (sympy.S.One, sympy.Abs(r * r) &lt;= 1e-5), # If radius is near zero, use 1</span>
+        <span class="c1">#    (r * r, True)                # Otherwise, use the original radius</span>
+        <span class="c1"># )</span>
+        <span class="n">cos_theta</span> <span class="o">=</span> <span class="n">dot</span> <span class="o">/</span> <span class="p">(</span><span class="n">r</span> <span class="o">*</span> <span class="n">r</span><span class="p">)</span>
+
+        <span class="c1"># Half angle formulas (always positive square roots)</span>
+        <span class="n">cos_half</span> <span class="o">=</span> <span class="n">sympy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="mi">1</span> <span class="o">+</span> <span class="n">cos_theta</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">sin_half</span> <span class="o">=</span> <span class="n">sympy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">cos_theta</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># Midpoint direction (rotation of start vector by half the angle)</span>
+        <span class="n">mid_dir_x</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">us_x</span> <span class="o">*</span> <span class="n">cos_half</span> <span class="o">-</span> <span class="n">us_y</span> <span class="o">*</span> <span class="n">sin_half</span><span class="p">)</span>
+        <span class="n">mid_dir_y</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">us_x</span> <span class="o">*</span> <span class="n">sin_half</span> <span class="o">+</span> <span class="n">us_y</span> <span class="o">*</span> <span class="n">cos_half</span><span class="p">)</span>
+
+        <span class="n">mx</span> <span class="o">=</span> <span class="n">cx</span> <span class="o">+</span> <span class="n">mid_dir_x</span>
+        <span class="n">my</span> <span class="o">=</span> <span class="n">cy</span> <span class="o">+</span> <span class="n">mid_dir_y</span>
+
+        <span class="c1"># Calculate midpoint coordinates</span>
+        <span class="n">mx</span> <span class="o">=</span> <span class="n">cx</span> <span class="o">+</span> <span class="n">mid_dir_x</span>
+        <span class="n">my</span> <span class="o">=</span> <span class="n">cy</span> <span class="o">+</span> <span class="n">mid_dir_y</span>
+
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;mid_</span><span class="si">{</span><span class="n">arc</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="c1"># Return a new Point object</span>
+        <span class="k">return</span> <span class="n">Point</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">mx</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">my</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="MajorArc.mirror_across_line">
+<a class="viewcode-back" href="../../source/pygeox_basic_objects.html#pygeox.basic_objects.MajorArc.mirror_across_line">[docs]</a>
+    <span class="k">def</span> <span class="nf">mirror_across_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis_line</span><span class="p">:</span> <span class="s2">&quot;Line&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;MinorArc&quot;</span><span class="p">:</span>
+        <span class="n">center_m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">center</span><span class="o">.</span><span class="n">mirror_across_line</span><span class="p">(</span><span class="n">axis_line</span><span class="p">)</span>
+        <span class="n">start_m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_point</span><span class="o">.</span><span class="n">mirror_across_line</span><span class="p">(</span><span class="n">axis_line</span><span class="p">)</span>
+        <span class="n">end_m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_point</span><span class="o">.</span><span class="n">mirror_across_line</span><span class="p">(</span><span class="n">axis_line</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">MinorArc</span><span class="p">(</span>
+            <span class="n">center_m</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">radius</span><span class="p">,</span> <span class="n">start_m</span><span class="p">,</span> <span class="n">end_m</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span> <span class="ow">or</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_mirrored&quot;</span>
+        <span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a string representation of the MajorArc.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;MajorArc(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">, center=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">center</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">, r=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">radius</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;start=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start_point</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">, end=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">end_point</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;central_angle=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">central_angle</span><span class="si">}</span><span class="s2"> deg, length=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Angle">
+<a class="viewcode-back" href="../../source/pygeox_basic_objects.html#pygeox.basic_objects.Angle">[docs]</a>
+<span class="nd">@typechecked</span>
+<span class="k">class</span> <span class="nc">Angle</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents an angle defined by three points with a specified vertex.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        A (Point): One endpoint of the angle.</span>
+<span class="sd">        vertex (Point): The vertex point of the angle.</span>
+<span class="sd">        B (Point): The other endpoint of the angle.</span>
+<span class="sd">        plot (bool): Whether to plot the angle.</span>
+<span class="sd">        name (str): Name of the angle.</span>
+<span class="sd">    </span>
+<span class="sd">    Properties:</span>
+<span class="sd">        value: The angle measure at the vertex in degrees (or symbolic expression).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">A</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span>
+        <span class="n">vertex</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span>
+        <span class="n">B</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span>
+        <span class="n">plot_sign</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">plot_text</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes an Angle instance.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            A (Point): One endpoint of the angle.</span>
+<span class="sd">            vertex (Point): Vertex point where the angle is measured.</span>
+<span class="sd">            B (Point): The other endpoint of the angle.</span>
+<span class="sd">            plot (bool, optional): Whether to plot the angle. Defaults to True.</span>
+<span class="sd">            name (str, optional): Name of the angle. If None, a default name is generated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">name</span> <span class="ow">or</span> <span class="sa">f</span><span class="s2">&quot;angle_</span><span class="si">{</span><span class="n">A</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">vertex</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">B</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="n">A</span><span class="p">,</span> <span class="n">vertex</span><span class="p">,</span> <span class="n">B</span><span class="p">]))</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Three points of angle must be different.&quot;</span><span class="p">)</span>
+               
+        <span class="bp">self</span><span class="o">.</span><span class="n">A</span> <span class="o">=</span> <span class="n">A</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vertex</span> <span class="o">=</span> <span class="n">vertex</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">B</span> <span class="o">=</span> <span class="n">B</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot_sign</span> <span class="o">=</span> <span class="n">plot_sign</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot_text</span> <span class="o">=</span> <span class="n">plot_text</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculates and returns the angle value at the vertex formed by points A and B.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float or sympy.Expr: The angle measure in degrees (or symbolic expression if symbolic).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertex</span><span class="o">.</span><span class="n">angle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">B</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Rafael Cabral.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
